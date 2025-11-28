@@ -13,7 +13,7 @@ namespace WebApp.Controller.Controllers
         public ProductImageController(IProductImageService service, IWebHostEnvironment env)
         {
             _service = service;
-            _env = env;
+            _env = env ?? throw new ArgumentNullException(nameof(env));
         }
 
         [HttpPost("{productId}")]
@@ -23,7 +23,9 @@ namespace WebApp.Controller.Controllers
                 return BadRequest("File rỗng");
             string folder = Path.Combine(_env.WebRootPath, "uploads");
             if (!Directory.Exists(folder))
+            {
                 Directory.CreateDirectory(folder);
+            }
             string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
             string filePath = Path.Combine(folder, fileName);
 

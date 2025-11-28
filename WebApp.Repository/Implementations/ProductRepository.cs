@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,20 +21,28 @@ namespace WebApp.Repository.Implementations
         public void Add(Product product) => _context.Products.Add(product);
         
 
-        public void Delete(int id)
+        public async Task<bool> Delete(int id)
         {
-            var product = _context.Products.Find(id);
-            if(product != null)
-            {
-                _context.Products.Remove(product);
-            }
+            var product = _context.Products
+                                .Include(p => p.Images)
+                                .FirstOrDefault(p => p.Id == id);
+            if (product == null) return false;
+            _context.Products.Remove(product);
+            _context.SaveChanges();
+            return true;
         }
         
 
-        public Product? GetByID(int id) => _context.Products.Find(id);
+        public Product? GetByID(int id) => _context.Products
+                                                .Include(p => p.Images)
+                                                .Include(p => p.Category)
+                                                .FirstOrDefault(p => p.Id == id);
         
 
-        public IEnumerable<Product> GetProducts() => _context.Products.ToList();
+        public async Task<IEnumerable<Product>> GetProducts() => _context.Products
+                                                        .Include(p => p.Images)
+                                                        .Include(p => p.Category)
+                                                        .ToList();
         
 
         public async Task SaveChangesAsync()

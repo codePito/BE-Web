@@ -4,14 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WebApp.Model.Entities;
+using WebApp.Model.Request;
+using WebApp.Model.Response;
 
 namespace WebApp.Service.Interfaces
 {
     public interface ICategoryService
     {
         Task<IEnumerable<Category>> GetCategoriesAsync();
-        Task AddCategoryAsync(Category category);
-        Task UpdateCategoryAsync(Category category);
+        Task<CategoryResponse> AddCategoryAsync(CategoryRequest request);
+        Task<CategoryResponse> UpdateCategoryAsync(CategoryRequest request);
         Task Delete(int id);
     }
 }

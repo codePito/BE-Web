@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Model.Entities;
+using WebApp.Model.Request;
 using WebApp.Service.Interfaces;
 
 namespace WebApp.Controller.Controllers
@@ -23,20 +24,20 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddCategory(Category category)
+        public async Task<IActionResult> AddCategory([FromBody] CategoryRequest request)
         {
-            await _service.AddCategoryAsync(category);
+            await _service.AddCategoryAsync(request);
             return Ok();
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateCategory(int id, Category category)
+        public async Task<IActionResult> UpdateCategory(int id, CategoryRequest request)
         {
-            if(id != category.Id)
+            if(id != request.Id)
             {
                 return BadRequest();
             }
-            await _service.UpdateCategoryAsync(category);
+            await _service.UpdateCategoryAsync(request);
             return NoContent();
         }
 

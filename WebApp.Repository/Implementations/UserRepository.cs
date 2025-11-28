@@ -23,9 +23,14 @@ namespace WebApp.Repository.Implementations
             await _context.Users.AddAsync(user);
         }
 
-        public async Task<User?> GetByUsernameAsync(string username)
+        public async Task CreateCartAsync(Cart cart)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            await _context.Carts.AddAsync(cart);
+        }
+
+        public async Task<User?> GetByUsernameAsync(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task SaveChangesAsync()

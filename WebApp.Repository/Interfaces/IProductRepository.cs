@@ -9,11 +9,11 @@ namespace WebApp.Repository.Interfaces
 {
     public interface IProductRepository
     {
-        IEnumerable<Product> GetProducts();
+        Task<IEnumerable<Product>> GetProducts();
         Product? GetByID(int id);
         void Add(Product product);
         void Update(Product product);
-        void Delete(int id);
+        Task<bool> Delete(int id);
         Task SaveChangesAsync();
     }
 }

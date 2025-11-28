@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Model;
+using WebApp.Model.Request;
 using WebApp.Service.Interfaces;
 
 namespace WebApp.Controller.Controllers
@@ -23,21 +25,25 @@ namespace WebApp.Controller.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByID(int id)
         {
-            var product = _service.GetByIDAsync(id);
+            var product = await _service.GetByIDAsync(id);
             if(product == null) return NotFound();
             return Ok(product);
         }
+        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create(Product product)
+        public async Task<IActionResult> Create([FromBody] ProductRequest request)
         {
-            await _service.AddAsync(product);
-            return CreatedAtAction(nameof(GetByID), new {id =  product.Id}, product);
+            var userIdClaim = User.FindFirst("id");
+            if(userIdClaim == null) return Unauthorized();
+            int userId = int.Parse(userIdClaim.Value);
+            var result = await _service.AddAsync(request, userId);
+            return Ok(result);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Product product)
+        public async Task<IActionResult> Update(int id, [FromBody] ProductRequest request)
         {
-            if(id != product.Id) return BadRequest();
-            await _service.UpdateAsync(product);
+            if(id != request.Id) return BadRequest();
+            await _service.UpdateAsync(request);
             return NoContent();
         }
         [HttpDelete("{id}")]

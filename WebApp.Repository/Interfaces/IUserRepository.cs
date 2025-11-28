@@ -9,8 +9,9 @@ namespace WebApp.Repository.Interfaces
 {
     public interface IUserRepository
     {
-        Task<User?> GetByUsernameAsync(string username);
+        Task<User?> GetByUsernameAsync(string email);
         Task AddAsync(User user);
+        Task CreateCartAsync(Cart cart);
         Task SaveChangesAsync();
     }
 }

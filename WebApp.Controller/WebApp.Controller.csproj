@@ -22,8 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WebApp.Helper\WebApp.Helper.csproj" />
     <ProjectReference Include="..\WebApp.Model\WebApp.Model.csproj" />
     <ProjectReference Include="..\WebApp.Service\WebApp.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
 </Project>

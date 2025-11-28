@@ -17,9 +17,10 @@ namespace WebApp.Model.Entities
         public string Address { get; set; }
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
-        [Required]
+        [EmailAddress]
         public string? Email { get; set; }
         [Required]
         public string Role { get; set; } = "User"; 
+        public Cart? Cart { get; set; }
     }
 }

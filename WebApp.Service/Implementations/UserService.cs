@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using WebApp.Model.Request;
+using AutoMapper;
 
 namespace WebApp.Service.Implementations
 {
@@ -13,22 +15,26 @@ namespace WebApp.Service.Implementations
     {
         private readonly IUserRepository _repo;
         private readonly IConfiguration _config;
-        public UserService(IUserRepository repo, IConfiguration config)
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository repo, IConfiguration config, IMapper mapper)
         {
             _repo = repo;
             _config = config;
+            _mapper = mapper;
         }
 
-        public async Task<string?> AuthenticateAysnc(string username, string password)
+        public async Task<string?> AuthenticateAysnc(string email, string password)
         {
-            var user = await _repo.GetByUsernameAsync(username);
+            var user = await _repo.GetByUsernameAsync(email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash)) return null;
+
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
+                new Claim("id", user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Role, user.Role)
             };
@@ -43,17 +49,20 @@ namespace WebApp.Service.Implementations
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<User> GetByUsernameAsync(string username)
+        public async Task<User> GetByUsernameAsync(string email)
         {
-            if (username == null) return null;
-            return await _repo.GetByUsernameAsync(username);
+            if (email == null) return null;
+            return await _repo.GetByUsernameAsync(email);
         }
 
-        public async Task RegisterAsync(User user, string password)
+        public async Task RegisterAsync(UserRequest request)
         {
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
-            await _repo.AddAsync(user);
+            var entity = _mapper.Map<User>(request);
+            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            await _repo.AddAsync(entity);
             await _repo.SaveChangesAsync();
+
+         
         }
     }
 }
