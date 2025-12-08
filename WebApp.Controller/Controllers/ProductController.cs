@@ -19,7 +19,7 @@ namespace WebApp.Controller.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var products = _service.GetProductsAsync();
+            var products = await _service.GetProductsAsync();
             return Ok(products);
         }
         [HttpGet("{id}")]
@@ -49,7 +49,7 @@ namespace WebApp.Controller.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            _service.DeleteAsync(id);
+            await _service.DeleteAsync(id);
             return NoContent();
         }
     }

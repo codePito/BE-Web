@@ -12,6 +12,7 @@ namespace WebApp.Repository.Interfaces
         Task<User?> GetByUsernameAsync(string email);
         Task AddAsync(User user);
         Task CreateCartAsync(Cart cart);
+        Task<IEnumerable<User>> GetUsers();
         Task SaveChangesAsync();
     }
 }

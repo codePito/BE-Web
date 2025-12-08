@@ -22,5 +22,6 @@ namespace WebApp.Model.Entities
         [Required]
         public string Role { get; set; } = "User"; 
         public Cart? Cart { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }

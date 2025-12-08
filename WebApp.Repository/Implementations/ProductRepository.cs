@@ -18,17 +18,19 @@ namespace WebApp.Repository.Implementations
             _context = context;
         }
 
-        public void Add(Product product) => _context.Products.Add(product);
+        public async Task Add(Product product)
+        {
+            _context.Products.Add(product);
+        }
         
 
         public async Task<bool> Delete(int id)
         {
-            var product = _context.Products
+            var product = await _context.Products
                                 .Include(p => p.Images)
-                                .FirstOrDefault(p => p.Id == id);
+                                .FirstOrDefaultAsync(p => p.Id == id);
             if (product == null) return false;
             _context.Products.Remove(product);
-            _context.SaveChanges();
             return true;
         }
         
@@ -39,10 +41,10 @@ namespace WebApp.Repository.Implementations
                                                 .FirstOrDefault(p => p.Id == id);
         
 
-        public async Task<IEnumerable<Product>> GetProducts() => _context.Products
+        public async Task<IEnumerable<Product>> GetProducts() =>  await _context.Products
                                                         .Include(p => p.Images)
                                                         .Include(p => p.Category)
-                                                        .ToList();
+                                                        .ToListAsync();
         
 
         public async Task SaveChangesAsync()

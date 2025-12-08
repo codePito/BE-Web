@@ -41,7 +41,7 @@ namespace WebApp.Controller.Controllers
             return NoContent();
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             await _service.Delete(id);

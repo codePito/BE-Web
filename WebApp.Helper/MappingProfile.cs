@@ -39,9 +39,21 @@ namespace WebApp.Helper
                     opt => opt.MapFrom(src => src.Product.Price));
             //Cart
             CreateMap<Cart, CartResponse>();
-                
+
+
 
             //******************* Entity -> Response *******************
+            //Order
+            CreateMap<Order, OrderResponse>()
+                .ForMember(o => o.Status, opt => opt.MapFrom(s => s.Status.ToString()))
+                .ForMember(o => o.Items, opt => opt.MapFrom(s => s.Items));
+
+            CreateMap<OrderItem, OrderItemResponse>()
+                .ForMember(d => d.Total,
+                opt => opt.MapFrom(s => s.Total));
+
+            CreateMap<Payment, PaymentResponse>()
+                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
 
             //Product
             CreateMap<Product, ProductResponse>()

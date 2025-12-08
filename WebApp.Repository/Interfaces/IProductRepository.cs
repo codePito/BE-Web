@@ -11,7 +11,7 @@ namespace WebApp.Repository.Interfaces
     {
         Task<IEnumerable<Product>> GetProducts();
         Product? GetByID(int id);
-        void Add(Product product);
+        Task Add(Product product);
         void Update(Product product);
         Task<bool> Delete(int id);
         Task SaveChangesAsync();

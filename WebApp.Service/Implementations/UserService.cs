@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using WebApp.Model.Request;
 using AutoMapper;
+using WebApp.Model.Response;
 
 namespace WebApp.Service.Implementations
 {
@@ -55,6 +56,12 @@ namespace WebApp.Service.Implementations
             return await _repo.GetByUsernameAsync(email);
         }
 
+        public async Task<IEnumerable<UserResponse>> GetUsers()
+        {
+            var result = await _repo.GetUsers();
+            return _mapper.Map<IEnumerable<UserResponse>>(result);
+        }
+
         public async Task RegisterAsync(UserRequest request)
         {
             var entity = _mapper.Map<User>(request);
@@ -62,7 +69,6 @@ namespace WebApp.Service.Implementations
             await _repo.AddAsync(entity);
             await _repo.SaveChangesAsync();
 
-         
         }
     }
 }

@@ -39,7 +39,7 @@ namespace WebApp.Service.Implementations
         {
             var entity = _mapper.Map<Product>(request);
             entity.CreatedBy = userId;
-            _repo.Add(entity);
+            await _repo.Add(entity);
 
             await _repo.SaveChangesAsync();
 
@@ -54,7 +54,7 @@ namespace WebApp.Service.Implementations
         }
         public async Task DeleteAsync(int id)
         {
-            _repo.Delete(id);
+            await _repo.Delete(id);
             await _repo.SaveChangesAsync();
         }
 

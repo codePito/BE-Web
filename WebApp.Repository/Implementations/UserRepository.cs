@@ -33,6 +33,11 @@ namespace WebApp.Repository.Implementations
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
+        public async Task<IEnumerable<User>> GetUsers()
+        {
+            return await _context.Users.ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

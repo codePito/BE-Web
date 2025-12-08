@@ -13,6 +13,9 @@ namespace WebApp.Model.Data
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Payment> Payments { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -52,6 +55,27 @@ namespace WebApp.Model.Data
                 .WithMany(p => p.Items)
                 .HasForeignKey(ci => ci.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //User - Order (1-n)
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Orders)
+                .WithOne(o => o.User)
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            //Order - OrderItem (1 - n)
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.Items)
+                .WithOne(i => i.Order)
+                .HasForeignKey(i => i.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            //Order - Payment (1 - n)
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.Payments)
+                .WithOne(p => p.Order)
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

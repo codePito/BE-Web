@@ -13,6 +13,7 @@ namespace WebApp.Service.Interfaces
     {
         Task<string?> AuthenticateAysnc(string email, string password);
         Task RegisterAsync(UserRequest request);
+        Task<IEnumerable<UserResponse>> GetUsers();
         Task<User> GetByUsernameAsync(string email);
     }
 }

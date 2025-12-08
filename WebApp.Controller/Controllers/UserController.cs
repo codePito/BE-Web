@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Model.Entities;
 using WebApp.Model.Request;
@@ -30,11 +31,19 @@ namespace WebApp.Controller.Controllers
             if (token == null) return Unauthorized("Invalid Credential");
             return Ok(new { token });
         }
-        [HttpGet]
+        [HttpGet("{email}")]
         public async Task<IActionResult> GetByUsername(string email)
         {
             var user = await _service.GetByUsernameAsync(email);
             return Ok(user);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetUsers()
+        {
+            var result = await _service.GetUsers();
+            return Ok(result);
         }
         
     }
