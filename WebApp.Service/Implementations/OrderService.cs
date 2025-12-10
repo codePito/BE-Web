@@ -25,13 +25,13 @@ namespace WebApp.Service.Implementations
             _productRepo = productRepo;
         }
 
-        public async Task<OrderResponse> CreateOrderAsync(OrderRequest request)
+        public async Task<OrderResponse> CreateOrderAsync(OrderRequest request, int userId)
         {
             if (request == null || !request.Items.Any()) throw new ArgumentException("Order must have items");
 
             var order = new Order
             {
-                UserId = request.UserId,
+                UserId = userId,
                 CreatedAt = DateTime.UtcNow,
                 Status = OrderStatus.PaymentPending,
                 Currency = request.Currency

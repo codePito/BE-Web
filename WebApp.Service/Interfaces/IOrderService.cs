@@ -11,7 +11,7 @@ namespace WebApp.Service.Interfaces
 {
     public interface IOrderService
     {
-        Task<OrderResponse> CreateOrderAsync(OrderRequest request);
+        Task<OrderResponse> CreateOrderAsync(OrderRequest request, int userId);
         Task<OrderResponse> GetByIdAsync(int id);
         Task<IEnumerable<OrderResponse>> GetByUserIdAsync(int userId);
         Task<bool> DeleteOrderAsync(int id);

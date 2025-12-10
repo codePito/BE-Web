@@ -9,6 +9,7 @@ using WebApp.Model.Response;
 using WebApp.Service.Interfaces;
 using static System.Net.WebRequestMethods;
 using WebApp.Helper;
+using Microsoft.Extensions.Logging;
 
 namespace WebApp.Service.Implementations
 {
@@ -16,10 +17,15 @@ namespace WebApp.Service.Implementations
     {
         private readonly HttpClient _http;
         private readonly IConfiguration _config;
+        private readonly ILogger<MomoService> _logger;
+
+        // momo config
         private readonly string _partnerCode;
         private readonly string _accessKey;
         private readonly string _secretKey;
         private readonly string _endpoint;
+        private readonly string _requestType;
+        private readonly string _isTestMode;
         public MomoService(HttpClient http, IConfiguration config)
         {
             _http = http;
@@ -28,6 +34,11 @@ namespace WebApp.Service.Implementations
             _accessKey = _config["Momo:AccessKey"];
             _secretKey = _config["Momo:SecretKey"];
             _endpoint = _config["Momo:Endpoint"];
+            _requestType = _config["Momo:RequestType"] ?? "captureWallet";
+
+            _http.Timeout = TimeSpan.FromMilliseconds(
+                int.Parse(_config["Momo:Timeout"] ?? "30000")
+            );
         }
 
         public async Task<MomoPaymentResponse> CreatePaymentAsync(int orderId, decimal amount, string returnUrl, string notifyUrl)
@@ -67,8 +78,13 @@ namespace WebApp.Service.Implementations
             using var doc = JsonDocument.Parse(respBody);
             var root = doc.RootElement;
 
-            var payUrl = root.GetProperty("payUrl").GetString();
+            var resultCode = root.GetProperty("resultCode").GetInt32();
             var message = root.GetProperty("message").GetString();
+            if(resultCode != 0)
+            {
+                throw new Exception($"Momo error: {message}");
+            }
+            var payUrl = root.GetProperty("payUrl").GetString();
             var momoRequestId = root.GetProperty("requestId").GetString();
 
             return new MomoPaymentResponse

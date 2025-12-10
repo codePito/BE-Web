@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WebApp.Model.Entities;
 using WebApp.Model.Request;
 using WebApp.Service.Interfaces;
@@ -19,7 +21,10 @@ namespace WebApp.Controller.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OrderRequest request)
         {
-            var response = await _service.CreateOrderAsync(request);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int userId = int.Parse(userIdClaim.Value);
+            var response = await _service.CreateOrderAsync(request, userId);
             return Ok(response);
         }
 
@@ -32,8 +37,10 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpGet("/user/{userId}")]
+        [Authorize]
         public async Task<IActionResult> GetByUser(int userId)
         {
+            //var userId = int.Parse(User.FindFirst("id").Value);
             var response = await _service.GetByUserIdAsync(userId);
             return Ok(response);
         }

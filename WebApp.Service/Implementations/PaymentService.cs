@@ -97,7 +97,7 @@ namespace WebApp.Service.Implementations
             {
                 payment.Status = PaymentStatus.Success;
                 var order = await _orderRepo.GetByIdAsync(orderId);
-                if (order != null) { }
+                if (order != null) 
                 {
                     order.Status = OrderStatus.Paid;
                     await _orderRepo.UpdateAsync(order);

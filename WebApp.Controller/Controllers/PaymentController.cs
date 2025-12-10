@@ -14,9 +14,11 @@ namespace WebApp.Controller.Controllers
     {
         private readonly IPaymentService _service;
         private readonly IConfiguration _config;
+        private readonly ILogger _logger;
 
-        public PaymentController(IPaymentService service, IConfiguration config)
+        public PaymentController(IPaymentService service, IConfiguration config, ILogger logger)
         {
+            _logger = logger;
             _service = service;
             _config = config;
         }
@@ -38,14 +40,33 @@ namespace WebApp.Controller.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> MomoNotify()
         {
-            using var reader = new StreamReader(Request.Body);
-            var body = await reader.ReadToEndAsync();
+            try
+            {
+                using var reader = new StreamReader(Request.Body);
+                var body = await reader.ReadToEndAsync();
 
-            // signature header commonly "signature" (check MoMo doc)
-            var signature = Request.Headers["signature"].FirstOrDefault() ?? Request.Headers["Signature"].FirstOrDefault() ?? string.Empty;
+                // signature header commonly "signature" (check MoMo doc)
+                var signature = Request.Headers["signature"].FirstOrDefault() ?? Request.Headers["Signature"].FirstOrDefault() ?? string.Empty;
 
-            await _service.HandleMomoNotifyAsync(body, signature);
-            return Ok(new { result = "OK" });
+                await _service.HandleMomoNotifyAsync(body, signature);
+
+                return Ok(new
+                {
+                    partnerCode = "MOMO",
+                    requestId = "...",
+                    orderId = "...",
+                    resultCode = 0,
+                    message = "Success"
+                });
+            } catch (Exception ex)
+            {
+                _logger.LogError($"Momo notify error: {ex.Message}");
+                return Ok(new
+                {
+                    resultCode = 1,
+                    message = ex.Message
+                });
+            }
         }
 
         // return url (user redirected back) — optional for client UX
