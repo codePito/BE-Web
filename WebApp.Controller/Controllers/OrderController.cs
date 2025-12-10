@@ -21,7 +21,7 @@ namespace WebApp.Controller.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OrderRequest request)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("id");
             if (userIdClaim == null) return Unauthorized();
             int userId = int.Parse(userIdClaim.Value);
             var response = await _service.CreateOrderAsync(request, userId);

@@ -7,6 +7,7 @@ namespace WebApp.Controller.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CartController : ControllerBase
     {
         private readonly ICartService _service;

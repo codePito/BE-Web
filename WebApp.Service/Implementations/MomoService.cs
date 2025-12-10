@@ -63,7 +63,7 @@ namespace WebApp.Service.Implementations
                 amount = amountStr,
                 orderId = orderIdStr,
                 orderInfo = orderInfo,
-                returntUrl = returnUrl,
+                redirectUrl = returnUrl,
                 ipnUrl = notifyUrl,
                 extraData = extraData,
                 requestType = "captureWallet",

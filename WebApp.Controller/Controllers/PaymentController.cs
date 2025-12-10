@@ -14,9 +14,9 @@ namespace WebApp.Controller.Controllers
     {
         private readonly IPaymentService _service;
         private readonly IConfiguration _config;
-        private readonly ILogger _logger;
+        private readonly ILogger<PaymentController> _logger;
 
-        public PaymentController(IPaymentService service, IConfiguration config, ILogger logger)
+        public PaymentController(IPaymentService service, IConfiguration config, ILogger<PaymentController> logger)
         {
             _logger = logger;
             _service = service;
@@ -27,7 +27,7 @@ namespace WebApp.Controller.Controllers
         public async Task<IActionResult> CreateMomo([FromBody] MomoPaymentRequest request)
         {
             // get userId from JWT typically
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("id");
             if (userIdClaim == null) return Unauthorized();
             var userId = int.Parse(userIdClaim.Value);
 
@@ -97,7 +97,7 @@ namespace WebApp.Controller.Controllers
         [HttpPost("{paymentId}/retry")]
         public async Task<IActionResult> Retry(int paymentId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("id");
             if(userIdClaim == null) return Unauthorized();
             var userId = int.Parse(userIdClaim.Value);
             var result = await _service.RetryPaymentAsync(paymentId, userId);
