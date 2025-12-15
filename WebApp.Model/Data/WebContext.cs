@@ -10,12 +10,13 @@ namespace WebApp.Model.Data
         public DbSet<Product>? Products { get; set; }
         public DbSet<User>? Users { get; set; }
         public DbSet<Category>? Categories { get; set; }
-        public DbSet<ProductImage> ProductImages { get; set; }
+        //public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<Image> Images { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,11 +30,34 @@ namespace WebApp.Model.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Product -> ProductImage (1-n)
-            modelBuilder.Entity<ProductImage>()
-                .HasOne(pi => pi.Product)
-                .WithMany(p => p.Images) // navigation property Product.Images
-                .HasForeignKey(pi => pi.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<ProductImage>()
+            //    .HasOne(pi => pi.Product)
+            //    .WithMany(p => p.Images) // navigation property Product.Images
+            //    .HasForeignKey(pi => pi.ProductId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //Images
+            modelBuilder.Entity<Image>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.EntityType, e.EntityId })
+                    .HasDatabaseName("IX_Image_EntityType_EntityId");
+
+                entity.HasIndex(e => e.StorageKey)
+               .IsUnique()
+               .HasDatabaseName("IX_Image_StorageKey");
+
+                entity.HasIndex(e => new { e.EntityType, e.EntityId, e.IsPrimary })
+                    .HasDatabaseName("IX_Image_Primary");
+
+                entity.HasIndex(e => e.UploadedBy)
+                    .HasDatabaseName("IX_Image_UploadedBy");
+
+                // Query filter - không query ảnh đã xóa
+                entity.HasQueryFilter(i => !i.IsDeleted);
+
+            });
+                
 
             // User - Cart (1-1)
             modelBuilder.Entity<User>()

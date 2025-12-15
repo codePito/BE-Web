@@ -24,7 +24,11 @@ namespace WebApp.Model
         public int CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public Category? Category { get; set; }
-        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+        //public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+        [NotMapped]
+        public string? PrimaryImageUrl { get; set; }
+        [NotMapped]
+        public List<string> ImageUrls { get; set; } = new();
         public ICollection<CartItem> Items { get; set; } = new List<CartItem>();
     }
 }

@@ -1,3 +1,5 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +30,32 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()     // cho method: GET, POST, PUT, DELETE...
               .AllowAnyHeader();    // cho header
     });
+});
+
+//Cloudflare R2 S3 client
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    
+    var accessKey = config["CloudflareR2:AccessKeyId"]
+        ?? throw new ArgumentNullException("CloudflareR2:AccessKeyId");
+
+    var secretKey = config["CloudflareR2:SecretAccess"]
+        ?? throw new ArgumentNullException("CloudflareR2:SecretAccess");
+
+    var endpoint = config["CloudflareR2:Endpoint"]
+        ?? throw new ArgumentNullException("CloudflareR2:Endpoint");
+
+    var credentials = new BasicAWSCredentials(accessKey, secretKey);
+
+    var s3Config = new AmazonS3Config
+    {
+        ServiceURL = endpoint,
+        ForcePathStyle = true,
+        //SignatureVersion = "4"
+    };
+
+    return new AmazonS3Client(credentials, s3Config);
 });
 
 builder.Services.AddDbContext<WebContext>(options =>
@@ -64,6 +92,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 
 // DI
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -72,8 +104,6 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IProductImageService, ProductImageService>();
-builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
@@ -82,6 +112,8 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IMomoService, MomoService>();
 builder.Services.AddHttpClient<IMomoService, MomoService>();
+builder.Services.AddScoped<IImageRepository, ImagesRepository>();
+builder.Services.AddScoped<IImageService, ImageService>();
 // MAPPING
 builder.Services.AddAutoMapper(cfg =>
 {

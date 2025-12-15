@@ -27,7 +27,7 @@ namespace WebApp.Repository.Implementations
         public async Task<bool> Delete(int id)
         {
             var product = await _context.Products
-                                .Include(p => p.Images)
+                                //.Include(p => p.Images)
                                 .FirstOrDefaultAsync(p => p.Id == id);
             if (product == null) return false;
             _context.Products.Remove(product);
@@ -36,13 +36,13 @@ namespace WebApp.Repository.Implementations
         
 
         public Product? GetByID(int id) => _context.Products
-                                                .Include(p => p.Images)
+                                                //.Include(p => p.ImageUrls)
                                                 .Include(p => p.Category)
                                                 .FirstOrDefault(p => p.Id == id);
         
 
         public async Task<IEnumerable<Product>> GetProducts() =>  await _context.Products
-                                                        .Include(p => p.Images)
+                                                        //.Include(p => p.ImageUrls)
                                                         .Include(p => p.Category)
                                                         .ToListAsync();
         

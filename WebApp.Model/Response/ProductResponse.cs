@@ -16,6 +16,5 @@ namespace WebApp.Model.Response
         public int CategoryId { get; set; }
         public int CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
-        public List<ProductImageResponse> Images { get; set; } = new();
     }
 }

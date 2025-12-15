@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,42 +23,76 @@ namespace WebApp.Service.Implementations
         private readonly IMomoService _momoService;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
-        public PaymentService(IOrderRepository orderRepo, IPaymentRepository repo, IMomoService momoService, IMapper mapper, IConfiguration config)
+        private readonly ILogger<PaymentService> _logger;
+        public PaymentService(IOrderRepository orderRepo, IPaymentRepository repo, IMomoService momoService, IMapper mapper, IConfiguration config, ILogger<PaymentService> logger)
         {
             _orderRepo = orderRepo;
             _repo = repo;
             _momoService = momoService;
             _mapper = mapper;
             _config = config;
+            _logger = logger;
         }
 
         public async Task<MomoPaymentResponse> CreateMomoPaymentAsync(MomoPaymentRequest request, int userId)
         {
-            var order = await _orderRepo.GetByIdAsync(request.OrderId);
-            if (order == null) throw new Exception("Order not found");
-            if (order.UserId != userId) throw new UnauthorizedAccessException();
-            if (order.Status == OrderStatus.Paid) throw new Exception("Order already paid");
-
-            var payment = new Payment
+            try
             {
-                OrderId = order.Id,
-                Amount = order.TotalAmount,
-                Currency = order.Currency,
-                Provider = "Momo",
-                Status = PaymentStatus.Pending,
-                CreatedAt = DateTime.UtcNow,
-            };
-            var savedPayment = await _repo.AddAsync(payment);
+                var order = await _orderRepo.GetByIdAsync(request.OrderId);
+                if (order == null) throw new Exception("Order not found");
+                if (order.UserId != userId) throw new UnauthorizedAccessException("You don't have permission to pay this order");
+                if (order.Status == OrderStatus.Paid) throw new Exception("Order already paid");
 
-            var returnUrl = request.ReturnUrl;
-            var notifyUrl = request.NotifyUrl;
-            var momoResponse = await _momoService.CreatePaymentAsync(order.Id, order.TotalAmount, returnUrl, notifyUrl);
+                // Create payment record
+                var payment = new Payment
+                {
+                    OrderId = order.Id,
+                    Amount = order.TotalAmount,
+                    Currency = order.Currency,
+                    Provider = "MoMo",
+                    Status = PaymentStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                };
+                var savedPayment = await _repo.AddAsync(payment);
 
-            savedPayment.ProviderPaymentId = momoResponse.RequestId;
-            savedPayment.RawResponse = JsonSerializer.Serialize(momoResponse);
-            await _repo.UpdateAsync(savedPayment);
+                var returnUrl = string.IsNullOrEmpty(request.ReturnUrl)
+                    ? _config["Momo:ReturnUrl"] ?? "http://localhost:5173/"
+                    : request.ReturnUrl;
 
-            return momoResponse;
+                var notifyUrl = string.IsNullOrEmpty(request.NotifyUrl)
+                    ? _config["Momo:NotifyUrl"] ?? "https://google.com"
+                    : request.NotifyUrl;
+
+                // ✅ Gọi MoMo API - timestamp được tự động tạo bên trong CreatePaymentAsync
+                var momoResponse = await _momoService.CreatePaymentAsync(
+                    order.Id,
+                    order.TotalAmount,
+                    returnUrl,
+                    notifyUrl
+                );
+
+                // Update payment with MoMo response
+                savedPayment.ProviderPaymentId = momoResponse.RequestId;
+                savedPayment.RawResponse = JsonSerializer.Serialize(momoResponse);
+                await _repo.UpdateAsync(savedPayment);
+
+                return momoResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating MoMo payment");
+
+                // Mark payment as failed nếu đã tạo payment record
+                var payment = await _repo.GetByOrderIdAsync(request.OrderId);
+                if (payment != null)
+                {
+                    payment.Status = PaymentStatus.Failed;
+                    payment.RawResponse = ex.Message;
+                    await _repo.UpdateAsync(payment);
+                }
+
+                throw;
+            }
         }
 
         public async Task<PaymentResponse?> GetPaymentByIdAsync(int id)
@@ -74,19 +109,19 @@ namespace WebApp.Service.Implementations
 
         public async Task HandleMomoNotifyAsync(string requestBody, string signatureHeader)
         {
-            if (!_momoService.ValidateMomoSignature(requestBody, signatureHeader)) throw new Exception("Invalid signature");
+            if (!_momoService.ValidateMomoSignature(requestBody, signatureHeader))
+                throw new Exception("Invalid signature");
 
             using var doc = JsonDocument.Parse(requestBody);
             var root = doc.RootElement;
 
-            //momo test/prod body vary; adapt fields accordingly
-            var orderIdStr = root.GetProperty("orderId").GetString();
+            var momoOrderIdStr = root.GetProperty("orderId").GetString(); // VD: "14_1702345678"
             var requestId = root.GetProperty("requestId").GetString();
-            var resultCode = root.GetProperty("resultCode").GetInt32(); //0 Success
+            var resultCode = root.GetProperty("resultCode").GetInt32();
 
-            var amountStr = root.TryGetProperty("amount", out var a) ? a.GetString() ?? a.GetRawText() : "0";
+            // ✅ Parse để lấy orderId gốc (phần trước dấu _ đầu tiên)
+            var orderId = int.Parse(momoOrderIdStr?.Split('_')[0] ?? "0");
 
-            int orderId = int.Parse(orderIdStr!);
             var payment = await _repo.GetByOrderIdAsync(orderId);
             if (payment == null) throw new Exception("Payment not found");
 
@@ -97,18 +132,18 @@ namespace WebApp.Service.Implementations
             {
                 payment.Status = PaymentStatus.Success;
                 var order = await _orderRepo.GetByIdAsync(orderId);
-                if (order != null) 
+                if (order != null)
                 {
                     order.Status = OrderStatus.Paid;
-                    await _orderRepo.UpdateAsync(order);
+                    await _orderRepo.SaveChangesAsync();
                 }
-                await _repo.UpdateAsync(payment);
             }
             else
             {
                 payment.Status = PaymentStatus.Failed;
-                await _repo.UpdateAsync(payment);
             }
+
+            await _repo.UpdateAsync(payment);
         }
 
         public async Task<PaymentResponse> RetryPaymentAsync(int paymentId, int userId)

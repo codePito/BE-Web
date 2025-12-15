@@ -23,7 +23,7 @@ namespace WebApp.Helper
                     opt => opt.MapFrom(src => src.CategoryId));
 
             //Product Image
-            CreateMap<ProductImageRequest, ProductImage>();
+            //CreateMap<ProductImageRequest, ProductImage>();
 
             //Category
             CreateMap<CategoryRequest, Category>();
@@ -37,10 +37,16 @@ namespace WebApp.Helper
                     opt => opt.MapFrom(src => src.Product.Name))
                 .ForMember(dest => dest.Price,
                     opt => opt.MapFrom(src => src.Product.Price));
+
             //Cart
             CreateMap<Cart, CartResponse>();
-
-
+            
+            //Image
+            CreateMap<Image, ImageResponse>()
+                .ForMember(dest => dest.FileSizeFormatted,
+                    opt => opt.MapFrom(src => src.FileSizeFormatted))
+                .ForMember(dest => dest.Dimensions,
+                    opt => opt.MapFrom(src => src.Dimension));
 
             //******************* Entity -> Response *******************
             //Order
@@ -56,15 +62,15 @@ namespace WebApp.Helper
                 .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
 
             //Product
-            CreateMap<Product, ProductResponse>()
+            CreateMap<Product, ProductResponse>();
                 //.ForMember(dest => dest.CategoryName,
                 //    opt => opt.MapFrom(src => src.Category.Name))
 
-                .ForMember(dest => dest.Images,
-                    opt => opt.MapFrom(src => src.Images));
+                //.ForMember(dest => dest.Images,
+                //    opt => opt.MapFrom(src => src.Images));
 
             //Product Image
-            CreateMap<ProductImage, ProductImageResponse>();  
+            //CreateMap<ProductImage, ProductImageResponse>();  
 
             CreateMap<Category, CategoryResponse>()
                 .ForMember(dest => dest.Products,
