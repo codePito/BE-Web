@@ -286,6 +286,8 @@ namespace WebApp.Service.Implementations
                 Key = key,
                 InputStream = stream,
                 ContentType = contentType,
+                //ContentLength = stream.Length,
+                DisablePayloadSigning = true,
                 CannedACL = S3CannedACL.PublicRead
             };
 

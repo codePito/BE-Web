@@ -22,8 +22,12 @@ namespace WebApp.Helper
                 .ForMember(dest => dest.CategoryID,
                     opt => opt.MapFrom(src => src.CategoryId));
 
-            //Product Image
-            //CreateMap<ProductImageRequest, ProductImage>();
+            //Images
+            CreateMap<Image, ImageResponse>()
+                .ForMember(dest => dest.FileSizeFormatted,
+                    opt => opt.MapFrom(src => src.FileSizeFormatted))
+                .ForMember(dest => dest.Dimensions,
+                    opt => opt.MapFrom(src => src.Dimension));
 
             //Category
             CreateMap<CategoryRequest, Category>();
@@ -62,12 +66,12 @@ namespace WebApp.Helper
                 .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
 
             //Product
-            CreateMap<Product, ProductResponse>();
-                //.ForMember(dest => dest.CategoryName,
-                //    opt => opt.MapFrom(src => src.Category.Name))
+            CreateMap<Product, ProductResponse>()
+                .ForMember(dest => dest.PrimaryImageUrl,
+                    opt => opt.MapFrom(src => src.PrimaryImageUrl))
+                .ForMember(dest => dest.ImageUrls,
+                    opt => opt.MapFrom(src => src.ImageUrls));
 
-                //.ForMember(dest => dest.Images,
-                //    opt => opt.MapFrom(src => src.Images));
 
             //Product Image
             //CreateMap<ProductImage, ProductImageResponse>();  
@@ -77,8 +81,9 @@ namespace WebApp.Helper
                     opt => opt.MapFrom(src => src.Products));
 
             //User
-            CreateMap<User, UserResponse>();
-
+            CreateMap<User, UserResponse>()
+                .ForMember(dest => dest.AvatarUrl,
+                    opt => opt.MapFrom(src => src.AvatarUrl));
 
         }
     }

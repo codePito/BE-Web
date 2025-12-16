@@ -24,7 +24,7 @@ namespace WebApp.Model
         public int CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public Category? Category { get; set; }
-        //public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+
         [NotMapped]
         public string? PrimaryImageUrl { get; set; }
         [NotMapped]

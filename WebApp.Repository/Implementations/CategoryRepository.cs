@@ -26,7 +26,22 @@ namespace WebApp.Repository.Implementations
                 _context.Categories.Remove(category);
             }
         }
-        public IEnumerable<Category> GetCategories() => _context.Categories.ToList();
+        public IEnumerable<Category> GetCategories()
+        {
+            var categories = _context.Categories.ToList();
+
+            var categoryIds = categories.Select(c => c.Id).ToList();
+            var images = _context.Images
+                                    .Where(i => i.EntityType == "Category" && categoryIds.Contains(i.EntityId) && !i.IsDeleted)
+                                    .ToList();
+
+            foreach (var category in categories)
+            {
+                category.ImageUrl = images.FirstOrDefault(i => i.EntityId == category.Id && i.IsPrimary)?.Url;
+            }   
+
+            return categories;
+        }
         
         public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
         

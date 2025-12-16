@@ -11,5 +11,6 @@ namespace WebApp.Model.Response
         public int Id { get; set; }
         public string Name { get; set; }
         public List<ProductResponse> Products { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }
