@@ -15,22 +15,48 @@ namespace WebApp.Service.Implementations
     {
         private readonly ICartRepository _repo;
         private readonly IMapper _mapper;
+        private readonly IProductRepository _productRepo;
 
-        public CartService(ICartRepository repo, IMapper mapper)
+        public CartService(ICartRepository repo, IMapper mapper, IProductRepository productRepo)
         {
             _repo = repo;
             _mapper = mapper;
+            _productRepo = productRepo;
         }
 
         public async Task<CartResponse> AddToCartAsync(int userId, int productId, int quantity)
         {
+            var product = _productRepo.GetByID(productId);
+            if (product == null)
+            {
+                throw new Exception("Product not found");
+            }
+
+            if (!product.IsAvailable)
+            {
+                throw new Exception("Product is not available");
+            }
+
+            if (product.StockQuantity < quantity)
+            {
+                throw new Exception($"Not enough stock, only {product.StockQuantity} items available");
+            }
+
             var cart = await GetOrCreateCart(userId);
 
             var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
 
             if (existingItem != null)
             {
-                existingItem.Quantity += quantity;
+                var newQuantity = existingItem.Quantity + quantity;
+
+                if (product.StockQuantity < newQuantity)
+                {
+                    throw new Exception($"Cannot add {quantity} more items");
+                }
+
+                existingItem.Quantity = newQuantity;
+
                 await _repo.UpdateItemAsync(existingItem);
             }
             else
@@ -84,6 +110,21 @@ namespace WebApp.Service.Implementations
             {
                 throw new Exception("Item not found");
             }
+
+            var product = _productRepo.GetByID(item.ProductId);
+            if (product == null)
+            {
+                throw new Exception("Product not found");
+            }
+
+            if(!product.IsAvailable)
+            {
+                throw new Exception("Product is not available");
+            }
+
+            if (product.StockQuantity < quantity)
+                throw new Exception($"Not enough stock, only {product.StockQuantity} items available");
+
             item.Quantity = quantity;
 
             await _repo.UpdateItemAsync(item);

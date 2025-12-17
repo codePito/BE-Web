@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WebApp.Model;
 using WebApp.Model.Entities;
 using WebApp.Model.Request;
 using WebApp.Model.Response;
@@ -20,7 +19,11 @@ namespace WebApp.Helper
             //Product
             CreateMap<ProductRequest, Product>()
                 .ForMember(dest => dest.CategoryID,
-                    opt => opt.MapFrom(src => src.CategoryId));
+                    opt => opt.MapFrom(src => src.CategoryId))
+                .ForMember(dest => dest.StockQuantity,
+                    opt => opt.MapFrom(src => src.StockQuantity))
+                .ForMember(dest => dest.LowStockThreshold,
+                    opt => opt.MapFrom(src => src.LowStockThreshold));
 
             //Images
             CreateMap<Image, ImageResponse>()
@@ -70,7 +73,17 @@ namespace WebApp.Helper
                 .ForMember(dest => dest.PrimaryImageUrl,
                     opt => opt.MapFrom(src => src.PrimaryImageUrl))
                 .ForMember(dest => dest.ImageUrls,
-                    opt => opt.MapFrom(src => src.ImageUrls));
+                    opt => opt.MapFrom(src => src.ImageUrls))
+                .ForMember(dest => dest.StockQuantity,
+                        opt => opt.MapFrom(src => src.StockQuantity))
+                .ForMember(dest => dest.LowStockThreshold,
+                        opt => opt.MapFrom(src => src.LowStockThreshold))
+                .ForMember(dest => dest.IsAvailable,
+                        opt => opt.MapFrom(src => src.IsAvailable))
+                .ForMember(dest => dest.IsOutOfStock,
+                        opt => opt.MapFrom(src => src.IsOutOfStock))
+                .ForMember(dest => dest.IsLowStock,
+                        opt => opt.MapFrom(src => src.IsLowStock));
 
 
             //Product Image

@@ -16,5 +16,8 @@ namespace WebApp.Service.Interfaces
         Task<ProductResponse> AddAsync(ProductRequest request, int userId);
         Task<ProductResponse> UpdateAsync(ProductRequest request);
         Task DeleteAsync(int id);
+        Task UpdateStockAsync(int productId, int quantity);
+        Task<IEnumerable<ProductResponse>> GetLowStockProductsAsync();
+        Task<IEnumerable<ProductResponse>> GetOutOfStockProductsAsync();
     }
 }

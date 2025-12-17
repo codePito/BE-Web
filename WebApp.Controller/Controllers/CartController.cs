@@ -25,6 +25,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddItem(int productId, int quantity = 1)
         {
             return Ok(await _service.AddToCartAsync(UserId, productId, quantity));

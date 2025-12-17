@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WebApp.Model;
 using WebApp.Model.Data;
+using WebApp.Model.Entities;
 using WebApp.Repository.Interfaces;
 
 namespace WebApp.Repository.Implementations

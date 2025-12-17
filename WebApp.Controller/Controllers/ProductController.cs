@@ -52,5 +52,38 @@ namespace WebApp.Controller.Controllers
             await _service.DeleteAsync(id);
             return NoContent();
         }
+
+        [HttpPatch("{id}/stock")]
+        public async Task<IActionResult> UpdateStock(int id, [FromBody] UpdateStockRequest request)
+        {
+            try
+            {
+                await _service.UpdateStockAsync(id, request.NewStockQuantity);
+                return Ok(new { message = "Stock updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("low-stock")]
+        public async Task<IActionResult> GetLowStockProducts()
+        {
+            var products = await _service.GetLowStockProductsAsync();
+            return Ok(products);
+        }
+
+        [HttpGet("out-of-stock")]
+        public async Task<IActionResult> GetOutOfStockProducts()
+        {
+            var products = await _service.GetOutOfStockProductsAsync();
+            return Ok(products);
+        }
+
+        public class UpdateStockRequest
+        {
+            public int NewStockQuantity { get; set; }
+        }
     }
 }

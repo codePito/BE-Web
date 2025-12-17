@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,13 @@ namespace WebApp.Service.Implementations
         private readonly IOrderRepository _repo;
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepo;
-        public OrderService(IOrderRepository repo, IMapper mapper, IProductRepository productRepo)
+        private readonly ILogger<OrderService> _logger;
+        public OrderService(IOrderRepository repo, IMapper mapper, IProductRepository productRepo, ILogger<OrderService> logger)
         {
             _repo = repo;
             _mapper = mapper;
             _productRepo = productRepo;
+            _logger = logger;
         }
 
         public async Task<OrderResponse> CreateOrderAsync(OrderRequest request, int userId)
@@ -38,10 +41,31 @@ namespace WebApp.Service.Implementations
             };
 
             decimal total = 0;
+
+
             foreach(var item in request.Items )
             {
                 var product = _productRepo.GetByID(item.ProductId);
                 if (product == null) throw new Exception($"Product id {item.ProductId} not found");
+
+                if (!product.IsAvailable)
+                {
+                    throw new Exception($"Product id {item.ProductId} is not available");
+                }
+
+                if(product.StockQuantity < item.Quantity)
+                {
+                    throw new Exception($"Not enough stock for product id {item.ProductId}, only {product.StockQuantity} items available");
+                }
+
+                product.StockQuantity -= item.Quantity;
+
+                if (product.StockQuantity == 0)
+                {
+                    product.IsAvailable = false;
+                    _logger.LogWarning("Product {ProductId} '{ProductName}' is now out of stock",product.Id, product.Name);
+                }
+
                 var orderItem = new OrderItem
                 {
                     ProductId = item.ProductId,
@@ -55,15 +79,38 @@ namespace WebApp.Service.Implementations
             }
                 order.TotalAmount = total;
                 
-                var saved = await _repo.AddAsync(order);
-                return _mapper.Map<OrderResponse>(saved);
+            var saved = await _repo.AddAsync(order);
+            await _productRepo.SaveChangesAsync();
+
+            _logger.LogInformation("Order {OrderId} created successfully. Total: {Total}", saved.Id, saved.TotalAmount);
+
+            return _mapper.Map<OrderResponse>(saved);
         }
 
         public async Task<bool> DeleteOrderAsync(int id)
         {
             var order = await _repo.GetByIdAsync(id);
             if (order == null) return false;
+
+            if (order.Status == OrderStatus.Pending || order.Status == OrderStatus.PaymentPending)
+            {
+                foreach (var item in order.Items)
+                {
+                    var product = _productRepo.GetByID(item.ProductId);
+                    if (product != null)
+                    {
+                        product.StockQuantity += item.Quantity;
+                        product.IsAvailable = true;
+                        _productRepo.Update(product);
+
+                        _logger.LogInformation("Restored {Quantity} stock for product {ProducId}", item.Quantity, product.Id);
+                    }
+                }
+                await _productRepo.SaveChangesAsync();
+            }
+
             await _repo.DeleteAsync(id);
+            _logger.LogInformation("Order {OrderId} deleted successfully", id);
             return true;
         }
 
@@ -83,8 +130,37 @@ namespace WebApp.Service.Implementations
         {
             var order = await _repo.GetByIdAsync(id);
             if (order == null) return false;
+
+            var oldStatus = order.Status;
+
             order.Status = status;
+
+            if (status == OrderStatus.Cancelled &&
+                (oldStatus == OrderStatus.Pending ||
+                 oldStatus == OrderStatus.PaymentPending ||
+                 oldStatus == OrderStatus.Paid))
+            {
+                foreach (var item in order.Items)
+                {
+                    var product = _productRepo.GetByID(item.ProductId);
+                    if (product != null)
+                    {
+                        product.StockQuantity += item.Quantity;
+                        product.IsAvailable = true;
+                        _productRepo.Update(product);
+
+                        _logger.LogInformation("Restored {Quantity} stock for product {ProductId} due to order cancellation",
+                            item.Quantity, product.Id);
+                    }
+                }
+                await _productRepo.SaveChangesAsync();
+            }
+
             await _repo.UpdateAsync(order);
+
+            _logger.LogInformation("Order {OrderId} status changed from {OldStatus} to {NewStatus}",
+                order.Id, oldStatus, status);
+
             return true;
         }
     }
