@@ -13,6 +13,7 @@ namespace WebApp.Service.Interfaces
     {
         Task<OrderResponse> CreateOrderAsync(OrderRequest request, int userId);
         Task<OrderResponse> GetByIdAsync(int id);
+        Task<IEnumerable<OrderResponse>> GetAllAsync();
         Task<IEnumerable<OrderResponse>> GetByUserIdAsync(int userId);
         Task<bool> DeleteOrderAsync(int id);
         Task<bool> UpdateOrderStatusAsync(int id, OrderStatus status);

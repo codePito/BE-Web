@@ -27,6 +27,18 @@ namespace WebApp.Repository.Implementations
             await _context.CartItems.AddAsync(item);
         }
 
+        public async Task ClearCartAsync(int userId)
+        {
+            var cart = await _context.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart != null && cart.Items.Any())
+            {
+                _context.CartItems.RemoveRange(cart.Items);
+            }
+        }
+
         public async Task<Cart?> GetCartByUserIdAsync(int userId)
         {
             return await _context.Carts

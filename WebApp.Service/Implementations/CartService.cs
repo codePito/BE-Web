@@ -76,6 +76,12 @@ namespace WebApp.Service.Implementations
             return _mapper.Map<CartResponse>(cart);
         }
 
+        public async Task ClearCartAsync(int userId)
+        {
+            await _repo.ClearCartAsync(userId);
+            await _repo.SaveChangesAsync();
+        }
+
         public async Task<CartResponse> GetUserCartAsync(int userId)
         {
             var cart = await _repo.GetCartByUserIdAsync(userId);

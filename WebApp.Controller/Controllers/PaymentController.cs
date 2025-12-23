@@ -26,7 +26,6 @@ namespace WebApp.Controller.Controllers
         [HttpPost("momo/create")]
         public async Task<IActionResult> CreateMomo([FromBody] MomoPaymentRequest request)
         {
-            // get userId from JWT typically
             var userIdClaim = User.FindFirst("id");
             if (userIdClaim == null) return Unauthorized();
             var userId = int.Parse(userIdClaim.Value);
@@ -42,13 +41,23 @@ namespace WebApp.Controller.Controllers
         {
             try
             {
+                _logger.LogInformation("=== MoMo IPN Received ===");
+                _logger.LogInformation("Headers: {Headers}", string.Join(", ", Request.Headers.Select(h => $"{h.Key}={h.Value}")));
+
                 using var reader = new StreamReader(Request.Body);
                 var body = await reader.ReadToEndAsync();
 
-                // signature header commonly "signature" (check MoMo doc)
-                var signature = Request.Headers["signature"].FirstOrDefault() ?? Request.Headers["Signature"].FirstOrDefault() ?? string.Empty;
+                _logger.LogInformation("MoMo IPN Body: {Body}", body);
+
+                var signature = Request.Headers["signature"].FirstOrDefault()
+                    ?? Request.Headers["Signature"].FirstOrDefault()
+                    ?? string.Empty;
+
+                _logger.LogInformation("MoMo IPN Signature: {Signature}", signature);
 
                 await _service.HandleMomoNotifyAsync(body, signature);
+
+                _logger.LogInformation("MoMo IPN processed successfully");
 
                 return Ok(new
                 {
@@ -58,9 +67,10 @@ namespace WebApp.Controller.Controllers
                     resultCode = 0,
                     message = "Success"
                 });
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                _logger.LogError($"Momo notify error: {ex.Message}");
+                _logger.LogError(ex, "Momo notify error: {Message}", ex.Message);
                 return Ok(new
                 {
                     resultCode = 1,
@@ -73,10 +83,24 @@ namespace WebApp.Controller.Controllers
         [HttpGet("momo/return")]
         public IActionResult MomoReturn([FromQuery] string orderId, [FromQuery] string requestId, [FromQuery] int resultCode)
         {
-            // redirect client to frontend page and show success/fail
-            var frontendUrl = _config["Frontend:Url"];
-            var redirect = $"{frontendUrl}/payment-result?orderId={orderId}&requestId={requestId}&resultCode={resultCode}";
-            return Redirect(redirect);
+            try
+            {
+                var actualOrderId = orderId?.Split('_')[0] ?? orderId;
+
+                _logger.LogInformation("MoMo Return: orderId={OrderId}, actualOrderId={ActualOrderId}, resultCode={ResultCode}",
+                    orderId, actualOrderId, resultCode);
+
+                var frontendUrl = _config["Frontend:Url"] ?? "http://localhost:5173";
+                var redirect = $"{frontendUrl}/payment-result?orderId={actualOrderId}&requestId={requestId}&resultCode={resultCode}";
+
+                return Redirect(redirect);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in MomoReturn");
+                var frontendUrl = _config["Frontend:Url"] ?? "http://localhost:5173";
+                return Redirect($"{frontendUrl}/payment-result?resultCode=1&error=parse_error");
+            }
         }
 
         [HttpGet("orderId/{orderId}")]
@@ -103,5 +127,24 @@ namespace WebApp.Controller.Controllers
             var result = await _service.RetryPaymentAsync(paymentId, userId);
             return Ok(result);
         }
+
+        [HttpPost("confirm")]
+        [Authorize]
+        public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmPaymentRequest request)
+        {
+            var userIdClaim = User.FindFirst("id");
+            if (userIdClaim == null) return Unauthorized();
+            var userId = int.Parse(userIdClaim.Value);
+
+            var success = await _service.ConfirmPaymentAsync(request.OrderId, request.ResultCode, userId);
+            return Ok(new { success, message = success ? "Payment confirmed" : "Payment failed or already processed" });
+        }
+        public class ConfirmPaymentRequest
+        {
+            public int OrderId { get; set; }
+            public int ResultCode { get; set; }
+        }
+
+
     }
 }

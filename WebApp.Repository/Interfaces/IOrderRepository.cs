@@ -12,8 +12,10 @@ namespace WebApp.Repository.Interfaces
         Task<Order> AddAsync(Order order);
         Task<Order?> GetByIdAsync(int id);
         Task<IEnumerable<Order>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<Order>> GetAllAsync();
         Task DeleteAsync(int id);
         Task UpdateAsync(Order order);
+        Task<IEnumerable<Order>> GetExpiredPendingOrdersAsync(int minutesAgo);
         Task SaveChangesAsync();
     }
 }

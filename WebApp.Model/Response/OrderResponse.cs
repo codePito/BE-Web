@@ -13,6 +13,8 @@ namespace WebApp.Model.Response
         public int UserId { get; set; }
         public DateTime CreatedAt { get; set; }
         public decimal TotalAmount { get; set; }
+        public string? UserName { get; set; }
+        public string? UserEmail { get; set; }
         public string Currency {  get; set; }
         public OrderStatus Status { get; set; }
         public List<OrderItemResponse> Items { get; set; } = new();

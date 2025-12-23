@@ -43,5 +43,12 @@ namespace WebApp.Controller.Controllers
             await _service.RemoveItemAsync(UserId, itemId);
             return NoContent();
         }
+
+        [HttpDelete("clear")]
+        public async Task<IActionResult> ClearCart()
+        {
+            await _service.ClearCartAsync(UserId);
+            return NoContent();
+        }
     }
 }

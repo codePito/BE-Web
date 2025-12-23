@@ -8,7 +8,6 @@ namespace WebApp.Controller.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class ImageController : ControllerBase
     {
         private readonly IImageService _service;

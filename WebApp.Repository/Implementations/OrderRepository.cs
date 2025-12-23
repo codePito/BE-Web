@@ -29,6 +29,15 @@ namespace WebApp.Repository.Implementations
             await _context.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<Order>> GetAllAsync()
+        {
+            return await _context.Orders.Include(o => o.Items)
+                                        .Include(o => o.Payments)
+                                        .Include(o => o.User)
+                                        .OrderByDescending(o => o.CreatedAt)
+                                        .ToListAsync();
+        }
+
         public async Task<Order?> GetByIdAsync(int id)
         {
             return await _context.Orders
@@ -45,12 +54,23 @@ namespace WebApp.Repository.Implementations
                 .Include(o => o.Payments)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<Order>> GetExpiredPendingOrdersAsync(int minutesAgo)
+        {
+            var cutoffTime = DateTime.UtcNow.AddMinutes(-minutesAgo);
 
+            return await _context.Orders
+                .Where(o => o.Status == OrderStatus.PaymentPending
+                    && (o.PaymentExpiry.HasValue && o.PaymentExpiry.Value < DateTime.UtcNow
+                        || o.CreatedAt < cutoffTime)) 
+                .Include(o => o.Items)
+                .ToListAsync();
+        }
         public Task SaveChangesAsync() => _context.SaveChangesAsync();
 
         public Task UpdateAsync(Order order)
         {
-            throw new NotImplementedException();
+            _context.Orders.Update(order);
+            return _context.SaveChangesAsync();
         }
     }
 }

@@ -20,6 +20,11 @@ namespace WebApp.Model.Request
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address format")]
         public string Email { get; set; }
+
+        [Required(ErrorMessage = "Phone number is required")]
+        [PhoneNumberValidation(ErrorMessage = "Invalid phone number format. It should start with '0' followed by 9 or 10 digits.")]
+        public string PhoneNumber { get; set; }
+
         [Required(ErrorMessage = "Address is required")]
         [StringLength(200, ErrorMessage = "Address cannot exceed 200 characters")]
         public string Address { get; set; } = string.Empty;

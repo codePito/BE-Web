@@ -43,7 +43,9 @@ namespace WebApp.Helper
                 .ForMember(dest => dest.ProductName,
                     opt => opt.MapFrom(src => src.Product.Name))
                 .ForMember(dest => dest.Price,
-                    opt => opt.MapFrom(src => src.Product.Price));
+                    opt => opt.MapFrom(src => src.Product.Price))
+                .ForMember(dest => dest.ProductImageUrl,
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.PrimaryImageUrl : null));
 
             //Cart
             CreateMap<Cart, CartResponse>();
@@ -59,7 +61,9 @@ namespace WebApp.Helper
             //Order
             CreateMap<Order, OrderResponse>()
                 .ForMember(o => o.Status, opt => opt.MapFrom(s => s.Status.ToString()))
-                .ForMember(o => o.Items, opt => opt.MapFrom(s => s.Items));
+                .ForMember(o => o.Items, opt => opt.MapFrom(s => s.Items))
+                .ForMember(o => o.UserName, opt => opt.MapFrom(s => s.User != null ? s.User.UserName : null))
+                .ForMember(o => o.UserEmail, opt => opt.MapFrom(s => s.User != null ? s.User.Email : null));
 
             CreateMap<OrderItem, OrderItemResponse>()
                 .ForMember(d => d.Total,

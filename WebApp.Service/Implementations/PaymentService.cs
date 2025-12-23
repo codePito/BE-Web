@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Transactions;
 using WebApp.Model.Entities;
 using WebApp.Model.Request;
 using WebApp.Model.Response;
@@ -19,12 +20,13 @@ namespace WebApp.Service.Implementations
     public class PaymentService : IPaymentService
     {
         private readonly IOrderRepository _orderRepo;
+        private readonly ICartRepository _cartRepo;
         private readonly IPaymentRepository _repo;
         private readonly IMomoService _momoService;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
         private readonly ILogger<PaymentService> _logger;
-        public PaymentService(IOrderRepository orderRepo, IPaymentRepository repo, IMomoService momoService, IMapper mapper, IConfiguration config, ILogger<PaymentService> logger)
+        public PaymentService(IOrderRepository orderRepo, IPaymentRepository repo, IMomoService momoService, IMapper mapper, IConfiguration config, ILogger<PaymentService> logger, ICartRepository cartRepo)
         {
             _orderRepo = orderRepo;
             _repo = repo;
@@ -32,6 +34,7 @@ namespace WebApp.Service.Implementations
             _mapper = mapper;
             _config = config;
             _logger = logger;
+            _cartRepo = cartRepo;
         }
 
         public async Task<MomoPaymentResponse> CreateMomoPaymentAsync(MomoPaymentRequest request, int userId)
@@ -43,7 +46,6 @@ namespace WebApp.Service.Implementations
                 if (order.UserId != userId) throw new UnauthorizedAccessException("You don't have permission to pay this order");
                 if (order.Status == OrderStatus.Paid) throw new Exception("Order already paid");
 
-                // Create payment record
                 var payment = new Payment
                 {
                     OrderId = order.Id,
@@ -63,7 +65,6 @@ namespace WebApp.Service.Implementations
                     ? _config["Momo:NotifyUrl"] ?? "https://google.com"
                     : request.NotifyUrl;
 
-                // ✅ Gọi MoMo API - timestamp được tự động tạo bên trong CreatePaymentAsync
                 var momoResponse = await _momoService.CreatePaymentAsync(
                     order.Id,
                     order.TotalAmount,
@@ -82,7 +83,6 @@ namespace WebApp.Service.Implementations
             {
                 _logger.LogError(ex, "Error creating MoMo payment");
 
-                // Mark payment as failed nếu đã tạo payment record
                 var payment = await _repo.GetByOrderIdAsync(request.OrderId);
                 if (payment != null)
                 {
@@ -109,41 +109,92 @@ namespace WebApp.Service.Implementations
 
         public async Task HandleMomoNotifyAsync(string requestBody, string signatureHeader)
         {
-            if (!_momoService.ValidateMomoSignature(requestBody, signatureHeader))
-                throw new Exception("Invalid signature");
+            _logger.LogInformation("=== HandleMomoNotifyAsync START ===");
 
-            using var doc = JsonDocument.Parse(requestBody);
-            var root = doc.RootElement;
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
-            var momoOrderIdStr = root.GetProperty("orderId").GetString(); // VD: "14_1702345678"
-            var requestId = root.GetProperty("requestId").GetString();
-            var resultCode = root.GetProperty("resultCode").GetInt32();
-
-            // ✅ Parse để lấy orderId gốc (phần trước dấu _ đầu tiên)
-            var orderId = int.Parse(momoOrderIdStr?.Split('_')[0] ?? "0");
-
-            var payment = await _repo.GetByOrderIdAsync(orderId);
-            if (payment == null) throw new Exception("Payment not found");
-
-            payment.ProviderPaymentId = requestId ?? payment.ProviderPaymentId;
-            payment.RawResponse = requestBody;
-
-            if (resultCode == 0)
+            try
             {
-                payment.Status = PaymentStatus.Success;
-                var order = await _orderRepo.GetByIdAsync(orderId);
-                if (order != null)
+                if (!_momoService.ValidateMomoSignature(requestBody, signatureHeader))
                 {
-                    order.Status = OrderStatus.Paid;
-                    await _orderRepo.SaveChangesAsync();
+                    _logger.LogError("Invalid MoMo signature!");
+                    throw new Exception("Invalid signature");
                 }
-            }
-            else
-            {
-                payment.Status = PaymentStatus.Failed;
-            }
 
-            await _repo.UpdateAsync(payment);
+                using var doc = JsonDocument.Parse(requestBody);
+                var root = doc.RootElement;
+
+                var momoOrderIdStr = root.GetProperty("orderId").GetString();
+                var requestId = root.GetProperty("requestId").GetString();
+                var resultCode = root.GetProperty("resultCode").GetInt32();
+
+                _logger.LogInformation("MoMo IPN: orderId={OrderId}, requestId={RequestId}, resultCode={ResultCode}",
+                    momoOrderIdStr, requestId, resultCode);
+
+                var orderId = int.Parse(momoOrderIdStr?.Split('_')[0] ?? "0");
+
+                _logger.LogInformation("Parsed orderId: {OrderId}", orderId);
+
+                var payment = await _repo.GetByOrderIdAsync(orderId);
+                if (payment == null)
+                {
+                    _logger.LogError("Payment not found for order {OrderId}", orderId);
+                    throw new Exception("Payment not found");
+                }
+
+                if (payment.Status == PaymentStatus.Success || payment.Status == PaymentStatus.Failed)
+                {
+                    _logger.LogWarning("Payment {PaymentId} already processed with status {Status}. Skipping.",
+                        payment.Id, payment.Status);
+                    scope.Complete(); 
+                    return;
+                }
+
+                payment.ProviderPaymentId = requestId ?? payment.ProviderPaymentId;
+                payment.RawResponse = requestBody;
+
+                if (resultCode == 0)
+                {
+                    payment.Status = PaymentStatus.Success;
+                    var order = await _orderRepo.GetByIdAsync(orderId);
+                    if (order != null)
+                    {
+                        if (order.Status == OrderStatus.Paid)
+                        {
+                            _logger.LogWarning("Order {OrderId} already marked as Paid. Skipping.", orderId);
+                            scope.Complete();
+                            return;
+                        }
+
+                        order.Status = OrderStatus.Paid;
+                        await _orderRepo.UpdateAsync(order);
+
+                        await _cartRepo.ClearCartAsync(order.UserId);
+                        await _cartRepo.SaveChangesAsync();
+
+                        _logger.LogInformation("✅ Order {OrderId} paid successfully. Cart cleared for user {UserId}",
+                            orderId, order.UserId);
+                    }
+                }
+                else
+                {
+                    payment.Status = PaymentStatus.Failed;
+                    _logger.LogWarning("❌ Payment failed for order {OrderId}. ResultCode: {ResultCode}",
+                        orderId, resultCode);
+                }
+
+                await _repo.UpdateAsync(payment);
+
+                scope.Complete();
+
+                _logger.LogInformation("=== HandleMomoNotifyAsync END (Success) ===");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "=== HandleMomoNotifyAsync END (Error) ===");
+                
+                throw;
+            }
         }
 
         public async Task<PaymentResponse> RetryPaymentAsync(int paymentId, int userId)
@@ -178,5 +229,70 @@ namespace WebApp.Service.Implementations
 
             return _mapper.Map<PaymentResponse>(saved);
         }
+
+        public async Task<bool> ConfirmPaymentAsync(int orderId, int resultCode, int userId)
+        {
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+            try
+            {
+                var order = await _orderRepo.GetByIdAsync(orderId);
+                if (order == null)
+                {
+                    _logger.LogWarning("ConfirmPayment: Order {OrderId} not found", orderId);
+                    return false;
+                }
+
+                if (order.UserId != userId)
+                {
+                    _logger.LogWarning("ConfirmPayment: User {UserId} không có quyền với order {OrderId}", userId, orderId);
+                    return false;
+                }
+
+                if (order.Status != OrderStatus.PaymentPending)
+                {
+                    _logger.LogInformation("ConfirmPayment: Order {OrderId} đã có status {Status}, không cần cập nhật", orderId, order.Status);
+                    return order.Status == OrderStatus.Paid;
+                }
+
+                var payment = await _repo.GetByOrderIdAsync(orderId);
+
+                if (resultCode == 0)
+                {
+                    order.Status = OrderStatus.Paid;
+                    if (payment != null)
+                    {
+                        payment.Status = PaymentStatus.Success;
+                        await _repo.UpdateAsync(payment);
+                    }
+                    _logger.LogInformation("ConfirmPayment: Order {OrderId} đã được cập nhật thành Paid", orderId);
+                }
+                else
+                {
+                    order.Status = OrderStatus.Failed;
+                    if (payment != null)
+                    {
+                        payment.Status = PaymentStatus.Failed;
+                        await _repo.UpdateAsync(payment);
+                    }
+                    await _cartRepo.ClearCartAsync(order.UserId);
+                    await _cartRepo.SaveChangesAsync();
+
+                    _logger.LogInformation("ConfirmPayment: Order {OrderId} đã được cập nhật thành Paid. Cart cleared.", orderId);
+                }
+
+                await _orderRepo.UpdateAsync(order);
+
+                scope.Complete();
+                return resultCode == 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error confirming payment for order {OrderId}", orderId);
+                throw;
+            }
+
+        }
+
     }
 }

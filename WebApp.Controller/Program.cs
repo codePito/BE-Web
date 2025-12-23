@@ -14,6 +14,7 @@ using WebApp.Helper;
 using WebApp.Model.Data;
 using WebApp.Repository.Implementations;
 using WebApp.Repository.Interfaces;
+using WebApp.Service.BackgroundServices;
 using WebApp.Service.Implementations;
 using WebApp.Service.Interfaces;
 
@@ -129,6 +130,9 @@ builder.Services.AddScoped<IMomoService, MomoService>();
 builder.Services.AddHttpClient<IMomoService, MomoService>();
 builder.Services.AddScoped<IImageRepository, ImagesRepository>();
 builder.Services.AddScoped<IImageService, ImageService>();
+
+builder.Services.AddHostedService<OrderCleanupService>();
+
 // MAPPING
 builder.Services.AddAutoMapper(cfg =>
 {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using WebApp.Model.Entities;
 using WebApp.Model.Request;
 using WebApp.Model.Response;
@@ -32,59 +33,74 @@ namespace WebApp.Service.Implementations
         {
             if (request == null || !request.Items.Any()) throw new ArgumentException("Order must have items");
 
-            var order = new Order
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+            try
             {
-                UserId = userId,
-                CreatedAt = DateTime.UtcNow,
-                Status = OrderStatus.PaymentPending,
-                Currency = request.Currency
-            };
-
-            decimal total = 0;
-
-
-            foreach(var item in request.Items )
-            {
-                var product = _productRepo.GetByID(item.ProductId);
-                if (product == null) throw new Exception($"Product id {item.ProductId} not found");
-
-                if (!product.IsAvailable)
+                var order = new Order
                 {
-                    throw new Exception($"Product id {item.ProductId} is not available");
-                }
-
-                if(product.StockQuantity < item.Quantity)
-                {
-                    throw new Exception($"Not enough stock for product id {item.ProductId}, only {product.StockQuantity} items available");
-                }
-
-                product.StockQuantity -= item.Quantity;
-
-                if (product.StockQuantity == 0)
-                {
-                    product.IsAvailable = false;
-                    _logger.LogWarning("Product {ProductId} '{ProductName}' is now out of stock",product.Id, product.Name);
-                }
-
-                var orderItem = new OrderItem
-                {
-                    ProductId = item.ProductId,
-                    ProductName = product.Name,
-                    UnitPrice = product.Price,
-                    Quantity = item.Quantity
+                    UserId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = OrderStatus.PaymentPending,
+                    Currency = request.Currency,
+                    PaymentExpiry = DateTime.UtcNow.AddMinutes(30)
                 };
-                order.Items.Add(orderItem);
-                total += orderItem.Total;
 
-            }
+                decimal total = 0;
+
+
+                foreach (var item in request.Items)
+                {
+                    var product = _productRepo.GetByID(item.ProductId);
+                    if (product == null) throw new Exception($"Product id {item.ProductId} not found");
+
+                    if (!product.IsAvailable)
+                    {
+                        throw new Exception($"Product id {item.ProductId} is not available");
+                    }
+
+                    if (product.StockQuantity < item.Quantity)
+                    {
+                        throw new Exception($"Not enough stock for product id {item.ProductId}, only {product.StockQuantity} items available");
+                    }
+
+                    product.StockQuantity -= item.Quantity;
+
+                    if (product.StockQuantity == 0)
+                    {
+                        product.IsAvailable = false;
+                        _logger.LogWarning("Product {ProductId} '{ProductName}' is now out of stock", product.Id, product.Name);
+                    }
+
+                    var orderItem = new OrderItem
+                    {
+                        ProductId = item.ProductId,
+                        ProductName = product.Name,
+                        UnitPrice = product.Price,
+                        Quantity = item.Quantity
+                    };
+                    order.Items.Add(orderItem);
+                    total += orderItem.Total;
+
+                }
                 order.TotalAmount = total;
-                
-            var saved = await _repo.AddAsync(order);
-            await _productRepo.SaveChangesAsync();
 
-            _logger.LogInformation("Order {OrderId} created successfully. Total: {Total}", saved.Id, saved.TotalAmount);
+                var saved = await _repo.AddAsync(order);
+                await _productRepo.SaveChangesAsync();
 
-            return _mapper.Map<OrderResponse>(saved);
+                scope.Complete();
+
+                _logger.LogInformation("Order {OrderId} created successfully. Total: {Total}, Expiry: {Expiry}",
+                    saved.Id, saved.TotalAmount, saved.PaymentExpiry);
+
+                return _mapper.Map<OrderResponse>(saved);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating order for user {UserId}", userId);
+
+                throw;
+            }
         }
 
         public async Task<bool> DeleteOrderAsync(int id)
@@ -112,6 +128,12 @@ namespace WebApp.Service.Implementations
             await _repo.DeleteAsync(id);
             _logger.LogInformation("Order {OrderId} deleted successfully", id);
             return true;
+        }
+
+        public async Task<IEnumerable<OrderResponse>> GetAllAsync()
+        {
+            var list = await _repo.GetAllAsync();
+            return _mapper.Map<IEnumerable<OrderResponse>>(list);
         }
 
         public async Task<OrderResponse?> GetByIdAsync(int id)

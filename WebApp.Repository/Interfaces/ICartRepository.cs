@@ -14,6 +14,7 @@ namespace WebApp.Repository.Interfaces
         Task AddItemAsync(CartItem item);
         Task UpdateItemAsync(CartItem item);
         Task RemoveItemAsync(CartItem item);
+        Task ClearCartAsync(int userId);
         Task SaveChangesAsync();
     }
 }

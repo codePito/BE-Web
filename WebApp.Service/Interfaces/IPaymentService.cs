@@ -17,6 +17,6 @@ namespace WebApp.Service.Interfaces
         Task<IEnumerable<PaymentResponse>>  GetPaymentsByOrderIdAsync(int orderId);
         Task<PaymentResponse> GetPaymentByIdAsync(int id);
         Task<PaymentResponse> RetryPaymentAsync(int paymentId, int userId);
-
+        Task<bool> ConfirmPaymentAsync(int orderId, int resultCode, int userId);
     }
 }

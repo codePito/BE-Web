@@ -14,6 +14,7 @@ namespace WebApp.Model.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public decimal TotalAmount { get; set; }
         public string Currency {  get; set; } = "VNĐ";
+        public DateTime? PaymentExpiry { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();

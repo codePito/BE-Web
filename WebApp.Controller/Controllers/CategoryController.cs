@@ -30,7 +30,7 @@ namespace WebApp.Controller.Controllers
             return Ok();
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, CategoryRequest request)
         {
             if(id != request.Id)

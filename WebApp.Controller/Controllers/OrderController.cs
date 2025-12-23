@@ -45,6 +45,14 @@ namespace WebApp.Controller.Controllers
             return Ok(response);
         }
 
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAll()
+        {
+            var response = await _service.GetAllAsync();
+            return Ok(response);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
