@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Model.Entities;
 using WebApp.Model.Request;
@@ -24,6 +25,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddCategory([FromBody] CategoryRequest request)
         {
             await _service.AddCategoryAsync(request);
@@ -31,6 +33,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCategory(int id, CategoryRequest request)
         {
             if(id != request.Id)
@@ -42,6 +45,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             await _service.Delete(id);

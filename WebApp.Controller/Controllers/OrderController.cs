@@ -10,6 +10,7 @@ namespace WebApp.Controller.Controllers
 {
     [Route("api/order")]
     [ApiController]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _service;
@@ -54,6 +55,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var ok = await _service.DeleteOrderAsync(id);
@@ -61,6 +63,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] OrderStatus status)
         {
             var ok = await _service.UpdateOrderStatusAsync(id, status);

@@ -9,6 +9,7 @@ namespace WebApp.Controller.Controllers
 {
     [Route("api/product")]
     [ApiController]
+    [Authorize]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _service;
@@ -29,8 +30,9 @@ namespace WebApp.Controller.Controllers
             if(product == null) return NotFound();
             return Ok(product);
         }
-        [Authorize]
+     
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] ProductRequest request)
         {
             var userIdClaim = User.FindFirst("id");
@@ -40,13 +42,16 @@ namespace WebApp.Controller.Controllers
             return Ok(result);
         }
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] ProductRequest request)
         {
             if(id != request.Id) return BadRequest();
             await _service.UpdateAsync(request);
             return NoContent();
         }
+
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);
@@ -54,6 +59,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPatch("{id}/stock")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateStock(int id, [FromBody] UpdateStockRequest request)
         {
             try
@@ -68,6 +74,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpGet("low-stock")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetLowStockProducts()
         {
             var products = await _service.GetLowStockProductsAsync();
@@ -75,6 +82,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpGet("out-of-stock")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetOutOfStockProducts()
         {
             var products = await _service.GetOutOfStockProductsAsync();

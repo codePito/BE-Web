@@ -10,6 +10,7 @@ namespace WebApp.Controller.Controllers
 {
     [Route("api/payment")]
     [ApiController]
+    [Authorize]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _service;
@@ -129,7 +130,6 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost("confirm")]
-        [Authorize]
         public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmPaymentRequest request)
         {
             var userIdClaim = User.FindFirst("id");

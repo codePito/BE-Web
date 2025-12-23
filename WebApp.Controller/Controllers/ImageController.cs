@@ -8,6 +8,7 @@ namespace WebApp.Controller.Controllers
 {
     [Route("api/image")]
     [ApiController]
+    [Authorize]
     public class ImageController : ControllerBase
     {
         private readonly IImageService _service;
@@ -28,6 +29,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost("product/{productId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UploadProductImage(int productId, IFormFile file, [FromQuery] bool isPrimary = false)
         {
             try
@@ -48,6 +50,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost("product/{productId}/multiple")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UploadMultipleProductImages(int productId, [FromForm] IFormFileCollection files)
         {
             try
@@ -145,6 +148,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPut("{imageId}/set-primary")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SetPrimaryImage(int imageId, [FromQuery] string entityType, [FromQuery] int entityId)
         {
             try
@@ -163,6 +167,7 @@ namespace WebApp.Controller.Controllers
 
         //soft delete
         [HttpDelete("{imageId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteImage(int imageId)
         {
             try

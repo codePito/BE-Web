@@ -39,7 +39,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpGet("users")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUsers()
         {
             var result = await _service.GetUsers();
