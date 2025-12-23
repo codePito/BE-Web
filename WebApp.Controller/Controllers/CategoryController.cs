@@ -6,7 +6,7 @@ using WebApp.Service.Interfaces;
 
 namespace WebApp.Controller.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/category")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -16,7 +16,7 @@ namespace WebApp.Controller.Controllers
             _service = service;
         }
 
-        [HttpGet]
+        [HttpGet("categories")]
         public async Task<IActionResult> GetCategories()
         {
             var categories = _service.GetCategoriesAsync();

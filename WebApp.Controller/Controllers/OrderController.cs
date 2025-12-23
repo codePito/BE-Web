@@ -8,7 +8,7 @@ using WebApp.Service.Interfaces;
 
 namespace WebApp.Controller.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/order")]
     [ApiController]
     public class OrderController : ControllerBase
     {
@@ -45,7 +45,7 @@ namespace WebApp.Controller.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
+        [HttpGet("orders")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {

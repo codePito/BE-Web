@@ -7,7 +7,7 @@ using WebApp.Service.Interfaces;
 
 namespace WebApp.Controller.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/product")]
     [ApiController]
     public class ProductController : ControllerBase
     {
@@ -16,7 +16,7 @@ namespace WebApp.Controller.Controllers
         {
             _service = service;
         }
-        [HttpGet]
+        [HttpGet("products")]
         public async Task<IActionResult> GetAll()
         {
             var products = await _service.GetProductsAsync();

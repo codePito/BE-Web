@@ -8,7 +8,7 @@ using WebApp.Service.Interfaces;
 
 namespace WebApp.Controller.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/payment")]
     [ApiController]
     public class PaymentController : ControllerBase
     {

@@ -5,7 +5,7 @@ using WebApp.Service.Interfaces;
 
 namespace WebApp.Controller.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/cart")]
     [ApiController]
     [Authorize]
     public class CartController : ControllerBase

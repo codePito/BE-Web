@@ -7,7 +7,7 @@ using WebApp.Service.Interfaces;
 
 namespace WebApp.Controller.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -38,7 +38,7 @@ namespace WebApp.Controller.Controllers
             return Ok(user);
         }
 
-        [HttpGet]
+        [HttpGet("users")]
         [Authorize]
         public async Task<IActionResult> GetUsers()
         {
