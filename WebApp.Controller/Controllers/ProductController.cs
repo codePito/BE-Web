@@ -9,7 +9,6 @@ namespace WebApp.Controller.Controllers
 {
     [Route("api/product")]
     [ApiController]
-    [Authorize]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _service;
@@ -18,12 +17,14 @@ namespace WebApp.Controller.Controllers
             _service = service;
         }
         [HttpGet("products")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             var products = await _service.GetProductsAsync();
             return Ok(products);
         }
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetByID(int id)
         {
             var product = await _service.GetByIDAsync(id);

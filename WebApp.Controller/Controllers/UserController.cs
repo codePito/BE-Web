@@ -32,6 +32,7 @@ namespace WebApp.Controller.Controllers
             return Ok(new { token });
         }
         [HttpGet("{email}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetByUsername(string email)
         {
             var user = await _service.GetByUsernameAsync(email);

@@ -18,6 +18,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpGet("categories")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCategories()
         {
             var categories = _service.GetCategoriesAsync();
