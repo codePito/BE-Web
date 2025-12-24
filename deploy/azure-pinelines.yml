@@ -6,23 +6,46 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  azureSubscription: 'ecommerce-svc'
+  appName: 'ecommerce-webapp'
 
 steps:
+# Install .NET 8
 - task: UseDotNet@2
   displayName: 'Install .NET SDK 8.0'
   inputs:
     packageType: 'sdk'
     version: '8.0.x'
 
+# Restore
 - task: DotNetCoreCLI@2
   displayName: 'Restore'
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
 
+# Build
 - task: DotNetCoreCLI@2
   displayName: 'Build'
   inputs:
     command: 'build'
     projects: '**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
+
+# Publish
+- task: DotNetCoreCLI@2
+  displayName: 'Publish'
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+
+# Deploy to Azure App Service
+- task: AzureWebApp@1
+  displayName: 'Deploy to Azure App Service'
+  inputs:
+    azureSubscription: $(azureSubscription)
+    appType: 'webAppLinux'
+    appName: $(appName)
+    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
