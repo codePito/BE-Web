@@ -24,6 +24,20 @@ steps:
     command: 'restore'
     projects: '**/*.csproj'
 
+- script: |
+        dotnet tool install --global dotnet-ef
+        export PATH="$PATH:$HOME/.dotnet/tools"
+  displayName: 'Install EF Core CLI'
+
+- script: |
+      dotnet ef database update \
+        --project WebApp.Model \
+        --startup-project WebApp.Controller
+  displayName: 'Run EF Core Migration'
+  env:
+    ConnectionStrings__Web: "Server=tcp:ecommerce-db-server.database.windows.net,1433;Initial Catalog=EcommerceDB;Persist Security Info=False;User ID=dbadmin;Password=Anhtu@n100103;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+    
+
 # Build
 - task: DotNetCoreCLI@2
   displayName: 'Build'
