@@ -24,11 +24,12 @@ steps:
     command: 'restore'
     projects: '**/*.csproj'
 
-- script: |
-        dotnet tool install --global dotnet-ef
-  displayName: 'Install EF Core CLI'
+# - script: |
+#         dotnet tool install --global dotnet-ef
+#   displayName: 'Install EF Core CLI'
 
 - script: |
+      dotnet tool restore
       dotnet ef database update \
         --project WebApp.Model \
         --startup-project WebApp.Controller
