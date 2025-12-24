@@ -63,4 +63,4 @@ steps:
     appName: $(appName)
     package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
     appSettings: |
-      -ConnectionStrings__Web "Server=tcp:ecommerce-db-server.database.windows.net,1433;Initial Catalog=EcommerceDB;Persist Security Info=False;User ID=dbadmin;Password=Anhtuan@100103;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+      -ConnectionStrings__Web "Server=tcp:ecommerce-db-server.database.windows.net,1433;Initial Catalog=EcommerceDB;Persist Security Info=False;User ID=dbadmin;Password=Anhtu@n100103;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
