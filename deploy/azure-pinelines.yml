@@ -50,5 +50,4 @@ steps:
     appName: $(appName)
     package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
     appSettings: |
-      -ASPNETCORE_ENVIRONMENT Production
       -ConnectionStrings__Web "ABC"
