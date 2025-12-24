@@ -24,19 +24,18 @@ steps:
     command: 'restore'
     projects: '**/*.csproj'
 
-# - script: |
-#         dotnet tool install --global dotnet-ef
-#   displayName: 'Install EF Core CLI'
-
+# Install EF Core CLI
 - script: |
-      dotnet tool restore
-      dotnet ef database update \
-        --project WebApp.Model \
-        --startup-project WebApp.Controller
+    dotnet tool uninstall --global dotnet-ef || echo not-installed
+    dotnet tool install --global dotnet-ef --version 8.*
+  displayName: 'Install EF Core CLI'
+
+# Run EF Core Migration
+- script: |
+    dotnet ef database update --project WebApp.Model --startup-project WebApp.Controller
   displayName: 'Run EF Core Migration'
   env:
-    ConnectionStrings__Web: "Server=tcp:ecommerce-db-server.database.windows.net,1433;Initial Catalog=EcommerceDB;Persist Security Info=False;User ID=dbadmin;Password=Anhtu@n100103;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-    
+    ConnectionStrings__Web: "Server=tcp:ecommerce-db-server.database.windows.net,1433;Initial Catalog=EcommerceDB;Persist Security Info=False;User ID=dbadmin;Password=aaaaaaa111;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 
 # Build
 - task: DotNetCoreCLI@2
@@ -64,4 +63,4 @@ steps:
     appName: $(appName)
     package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
     appSettings: |
-      -ConnectionStrings__Web "Server=tcp:ecommerce-db-server.database.windows.net,1433;Initial Catalog=EcommerceDB;Persist Security Info=False;User ID=dbadmin;Password=Anhtu@n100103;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+      -ConnectionStrings__Web "Server=tcp:ecommerce-db-server.database.windows.net,1433;Initial Catalog=EcommerceDB;Persist Security Info=False;User ID=dbadmin;Password=aaaaaaa111;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
