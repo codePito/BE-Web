@@ -13,6 +13,7 @@ namespace WebApp.Model.Entities
         public User? User { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public decimal TotalAmount { get; set; }
+        public string? ShippingAddress { get; set; }
         public string Currency {  get; set; } = "VNĐ";
         public DateTime? PaymentExpiry { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Pending;

@@ -21,12 +21,13 @@ namespace WebApp.Service.Implementations
     {
         private readonly IOrderRepository _orderRepo;
         private readonly ICartRepository _cartRepo;
+        private readonly IProductRepository _productRepo;
         private readonly IPaymentRepository _repo;
         private readonly IMomoService _momoService;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
         private readonly ILogger<PaymentService> _logger;
-        public PaymentService(IOrderRepository orderRepo, IPaymentRepository repo, IMomoService momoService, IMapper mapper, IConfiguration config, ILogger<PaymentService> logger, ICartRepository cartRepo)
+        public PaymentService(IOrderRepository orderRepo, IPaymentRepository repo, IMomoService momoService, IMapper mapper, IConfiguration config, ILogger<PaymentService> logger, ICartRepository cartRepo, IProductRepository productRepo)
         {
             _orderRepo = orderRepo;
             _repo = repo;
@@ -35,6 +36,7 @@ namespace WebApp.Service.Implementations
             _config = config;
             _logger = logger;
             _cartRepo = cartRepo;
+            _productRepo = productRepo;
         }
 
         public async Task<MomoPaymentResponse> CreateMomoPaymentAsync(MomoPaymentRequest request, int userId)
@@ -169,6 +171,20 @@ namespace WebApp.Service.Implementations
                         order.Status = OrderStatus.Paid;
                         await _orderRepo.UpdateAsync(order);
 
+                        foreach (var item in order.Items)
+                        {
+                            var product = _productRepo.GetByID(item.ProductId);
+                            if (product != null)
+                            {
+                                product.SoldCount += item.Quantity;
+                                _productRepo.Update(product);
+                                _logger.LogInformation("Updated SoldCount for product {ProductId}: +{Quantity} (Total: {SoldCount})",
+                                    product.Id, item.Quantity, product.SoldCount);
+                            }
+                        }
+
+                        await _productRepo.SaveChangesAsync();
+
                         await _cartRepo.ClearCartAsync(order.UserId);
                         await _cartRepo.SaveChangesAsync();
 
@@ -265,6 +281,20 @@ namespace WebApp.Service.Implementations
                         payment.Status = PaymentStatus.Success;
                         await _repo.UpdateAsync(payment);
                     }
+
+                    foreach (var item in order.Items)
+                    {
+                        var product = _productRepo.GetByID(item.ProductId);
+                        if (product != null)
+                        {
+                            product.SoldCount += item.Quantity;
+                            _productRepo.Update(product);
+                            _logger.LogInformation("Updated SoldCount for product {ProductId}: +{Quantity} (Total: {SoldCount})",
+                                product.Id, item.Quantity, product.SoldCount);
+                        }
+                    }
+                    await _productRepo.SaveChangesAsync();
+
                     _logger.LogInformation("ConfirmPayment: Order {OrderId} đã được cập nhật thành Paid", orderId);
                 }
                 else
@@ -275,6 +305,7 @@ namespace WebApp.Service.Implementations
                         payment.Status = PaymentStatus.Failed;
                         await _repo.UpdateAsync(payment);
                     }
+
                     await _cartRepo.ClearCartAsync(order.UserId);
                     await _cartRepo.SaveChangesAsync();
 

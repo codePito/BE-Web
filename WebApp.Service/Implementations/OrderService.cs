@@ -43,6 +43,7 @@ namespace WebApp.Service.Implementations
                     CreatedAt = DateTime.UtcNow,
                     Status = OrderStatus.PaymentPending,
                     Currency = request.Currency,
+                    ShippingAddress = request.ShippingAddress,
                     PaymentExpiry = DateTime.UtcNow.AddMinutes(30)
                 };
 
@@ -184,6 +185,79 @@ namespace WebApp.Service.Implementations
                 order.Id, oldStatus, status);
 
             return true;
+        }
+
+        public async Task<IEnumerable<TopCustomerStatsResponse>> GetTopCustomersAsync(int topCount = 10)
+        {
+            var orders = await _repo.GetAllAsync();
+
+            var completedOrders = orders.Where(o => o.Status == OrderStatus.Paid);
+
+            var topCustomers = completedOrders
+                .GroupBy(o => new
+                {
+                    o.UserId,
+                    o.User.UserName,
+                    o.User.Email
+                })
+                .Select(g => new TopCustomerStatsResponse
+                {
+                    UserId = g.Key.UserId,
+                    UserName = g.Key.UserName,
+                    Email = g.Key.Email,
+                    TotalSpent = g.Sum(o => o.TotalAmount),
+                    TotalOrders = g.Count()
+                })
+                .OrderByDescending(c => c.TotalOrders)
+                .Take(topCount)
+                .ToList();
+
+            _logger.LogInformation("Retrieved top {Count} customers", topCustomers.Count);
+
+            return topCustomers;
+        }
+
+        public async Task<IEnumerable<ProductSalesMonthlyStatsResponse>> GetProductSalesMonthlyAsync(int year)
+        {
+            var orders = await _repo.GetAllAsync();
+
+            var completedOrders = orders.Where(o => o.Status == OrderStatus.Paid && o.CreatedAt.Year == year);
+
+            var monthlyStats = completedOrders
+                .GroupBy(o => o.CreatedAt.Month)
+                .Select(g => new ProductSalesMonthlyStatsResponse
+                {
+                    Month = new DateTime(year, g.Key, 1).ToString("MMMM", System.Globalization.CultureInfo.InvariantCulture),
+                    TotalProducts = g.Sum(o => o.Items.Sum(i => i.Quantity)),
+                    TotalOrders = g.Count(),
+                    Year = year
+                })
+                .OrderBy(s => DateTime.ParseExact(s.Month, "MMMM", System.Globalization.CultureInfo.InvariantCulture).Month)
+                .ToList();
+
+            var allMonths = Enumerable.Range(1, 12)
+                .Select(m => new ProductSalesMonthlyStatsResponse
+                {
+                    Month = new DateTime(year, m, 1).ToString("MMM", System.Globalization.CultureInfo.InvariantCulture),
+                    TotalProducts = 0,
+                    TotalOrders = 0,
+                    Year = year
+                })
+                .ToList();
+
+            foreach (var stat in monthlyStats)
+            {
+                var month = allMonths.FirstOrDefault(m => m.Month == stat.Month);
+                if (month != null)
+                {
+                    month.TotalProducts = stat.TotalProducts;
+                    month.TotalOrders = stat.TotalOrders;
+                }
+            }
+
+            _logger.LogInformation("Retrieved product sales stats for year {Year}", year);
+
+            return allMonths;
         }
     }
 }

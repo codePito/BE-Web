@@ -39,7 +39,26 @@ namespace WebApp.Controller.Controllers
             return Ok(user);
         }
 
-        [HttpGet("users")]
+        [HttpPut("{id}/profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile(int id, [FromBody] UpdateProfileRequest request)
+        {
+            var userIdClaim = User.FindFirst("id");
+            if (userIdClaim == null) return Unauthorized();
+
+            int currentUserId = int.Parse(userIdClaim.Value);
+
+            //// Chỉ cho phép user update profile của chính mình (trừ admin)
+            //if (currentUserId != id && !User.IsInRole("Admin"))
+            //{
+            //    return Forbid();
+            //}
+
+            await _service.UpdateProfileAsync(id, request);
+            return Ok(new { message = "Profile updated successfully" });
+        }
+
+        [HttpGet("/api/users")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUsers()
         {

@@ -18,7 +18,7 @@ namespace WebApp.Model.Response
         public DateTime CreatedAt { get; set; }
         public string? PrimaryImageUrl { get; set; }
         public List<string> ImageUrls { get; set; } = new();
-
+        public int SoldCount { get; set; }
         public int StockQuantity { get; set; } 
         public int LowStockThreshold { get; set; }
         public bool IsAvailable { get; set; }

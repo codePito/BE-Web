@@ -37,7 +37,15 @@ namespace WebApp.Repository.Implementations
         {
             return await _context.Users.ToListAsync();
         }
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _context.Users.FindAsync(id);
+        }
 
+        public void Update(User user)
+        {
+            _context.Users.Update(user);
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

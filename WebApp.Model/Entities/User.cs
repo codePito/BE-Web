@@ -24,6 +24,7 @@ namespace WebApp.Model.Entities
         public string? Email { get; set; }
         [Required]
         public string Role { get; set; } = "User";
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [NotMapped]
         public string ? AvatarUrl { get; set; }

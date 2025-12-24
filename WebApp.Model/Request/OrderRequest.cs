@@ -14,5 +14,9 @@ namespace WebApp.Model.Request
         [Required(ErrorMessage = "At least one order item is required")]
         public List<OrderItemRequest> Items { get; set; } = new();
         public string Currency { get; set; } = "VND";
+
+        [Required(ErrorMessage = "Address is required")]
+        [StringLength(200, MinimumLength = 5, ErrorMessage = "Address cannot exceed 200 characters")]
+        public string ShippingAddress { get; set; } = string.Empty;
     }
 }

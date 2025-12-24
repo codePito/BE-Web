@@ -16,7 +16,7 @@ namespace WebApp.Controller.Controllers
         {
             _service = service;
         }
-        [HttpGet("products")]
+        [HttpGet("/api/products")]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {

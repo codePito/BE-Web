@@ -80,6 +80,8 @@ namespace WebApp.Helper
                     opt => opt.MapFrom(src => src.ImageUrls))
                 .ForMember(dest => dest.StockQuantity,
                         opt => opt.MapFrom(src => src.StockQuantity))
+                .ForMember(dest => dest.SoldCount,
+                        opt => opt.MapFrom(src => src.SoldCount))
                 .ForMember(dest => dest.LowStockThreshold,
                         opt => opt.MapFrom(src => src.LowStockThreshold))
                 .ForMember(dest => dest.IsAvailable,

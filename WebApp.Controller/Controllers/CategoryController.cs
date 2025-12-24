@@ -17,7 +17,7 @@ namespace WebApp.Controller.Controllers
             _service = service;
         }
 
-        [HttpGet("categories")]
+        [HttpGet("/api/categories")]
         [AllowAnonymous]
         public async Task<IActionResult> GetCategories()
         {

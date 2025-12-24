@@ -22,7 +22,7 @@ namespace WebApp.Model.Entities
         public int CategoryID { get; set; }
         public int CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
-
+        public int SoldCount { get; set; } = 0;
         public int StockQuantity { get; set; } = 0;
         public int LowStockThreshold { get; set; } = 5;
         public bool IsAvailable { get; set; } = true;

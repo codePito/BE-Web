@@ -8,7 +8,6 @@ namespace WebApp.Controller.Controllers
 {
     [Route("api/image")]
     [ApiController]
-    [Authorize]
     public class ImageController : ControllerBase
     {
         private readonly IImageService _service;
@@ -75,6 +74,7 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost("user/avatar")]
+        [Authorize]
         public async Task<IActionResult> UploadUserAvatar(IFormFile file)
         {
             try

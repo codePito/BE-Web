@@ -12,7 +12,7 @@ namespace WebApp.Model.Request
     {
         [Required(ErrorMessage = "UserName is required")]
         [StringLength(50, MinimumLength = 5, ErrorMessage = "UserName must be between 5 and 50 characters")]
-        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Username can only contain letters, numbers and underscore")]
+        [RegularExpression(@"^[\p{L}\p{M}\d\s_ ]+$", ErrorMessage = "Full name can only contain letters, numbers, spaces and underscore")]
         public string UserName { get; set; }
         [Required(ErrorMessage = "Password is required")]
         [PasswordStrength(MinLength = 8, RequireUppercase = true, RequireLowercase = true, RequireDigit = true)]
@@ -26,7 +26,7 @@ namespace WebApp.Model.Request
         public string PhoneNumber { get; set; }
 
         [Required(ErrorMessage = "Address is required")]
-        [StringLength(200, ErrorMessage = "Address cannot exceed 200 characters")]
+        [StringLength(200, MinimumLength = 5, ErrorMessage = "Address cannot exceed 200 characters")]
         public string Address { get; set; } = string.Empty;
     }
 }

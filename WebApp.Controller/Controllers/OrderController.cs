@@ -46,7 +46,7 @@ namespace WebApp.Controller.Controllers
             return Ok(response);
         }
 
-        [HttpGet("orders")]
+        [HttpGet("/api/orders")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
@@ -69,6 +69,24 @@ namespace WebApp.Controller.Controllers
             var ok = await _service.UpdateOrderStatusAsync(id, status);
             if (!ok) return NotFound();
             return Ok(ok);
+        }
+
+        [HttpGet("/api/orders/stats/top-customers")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetTopCustomers([FromQuery] int top = 10)
+        {
+            var result = await _service.GetTopCustomersAsync(top);
+            return Ok(result);
+        }
+
+        [HttpGet("/api/orders/stats/products-monthly")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetProductSalesMonthly([FromQuery] int year = 0)
+        {
+            if (year == 0) year = DateTime.Now.Year;
+
+            var result = await _service.GetProductSalesMonthlyAsync(year);
+            return Ok(result);
         }
     }
 }

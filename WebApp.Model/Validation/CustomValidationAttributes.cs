@@ -24,7 +24,7 @@ namespace WebApp.Model.Validation
 
                 if (!Regex.IsMatch(phone, phoneRegex))
                 {
-                    return new ValidationResult("Invalid phone number format. It should start with '0' followed by 9 or 10 digits.");
+                    return new ValidationResult(ErrorMessage ?? "Invalid phone number. Must start with 0 and have 10-11 digits (e.g., 0123456789)");
                 }
 
                 return ValidationResult.Success;

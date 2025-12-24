@@ -15,5 +15,6 @@ namespace WebApp.Service.Interfaces
         Task RegisterAsync(UserRequest request);
         Task<IEnumerable<UserResponse>> GetUsers();
         Task<User> GetByUsernameAsync(string email);
+        Task UpdateProfileAsync(int userId, UpdateProfileRequest request);
     }
 }
