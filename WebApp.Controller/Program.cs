@@ -182,9 +182,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 // Seed data
-//using (var scope = app.Services.CreateScope())
-//{
-//    var context = scope.ServiceProvider.GetRequiredService<WebContext>();
-//    DataSeeder.SeedData(context);
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<WebContext>();
+    DataSeeder.SeedData(context);
+}
 app.Run();

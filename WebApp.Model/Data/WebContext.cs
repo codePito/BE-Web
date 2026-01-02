@@ -52,7 +52,6 @@ namespace WebApp.Model.Data
                 entity.HasIndex(e => e.UploadedBy)
                     .HasDatabaseName("IX_Image_UploadedBy");
 
-                // Query filter - không query ảnh đã xóa
                 entity.HasQueryFilter(i => !i.IsDeleted);
 
             });
