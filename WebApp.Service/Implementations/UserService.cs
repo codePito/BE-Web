@@ -25,10 +25,10 @@ namespace WebApp.Service.Implementations
             _mapper = mapper;
         }
 
-        public async Task<string?> AuthenticateAysnc(string email, string password)
+        public async Task<string?> AuthenticateAysnc(SignInRequest request)
         {
-            var user = await _repo.GetByUsernameAsync(email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash)) return null;
+            var user = await _repo.GetByUsernameAsync(request.Email);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash)) return null;
 
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

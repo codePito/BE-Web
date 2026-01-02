@@ -11,7 +11,7 @@ namespace WebApp.Service.Interfaces
 {
     public interface IUserService
     {
-        Task<string?> AuthenticateAysnc(string email, string password);
+        Task<string?> AuthenticateAysnc(SignInRequest request);
         Task RegisterAsync(UserRequest request);
         Task<IEnumerable<UserResponse>> GetUsers();
         Task<User> GetByUsernameAsync(string email);

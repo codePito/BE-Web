@@ -25,9 +25,9 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login([FromBody]SignInRequest request)
         {
-            var token = await _service.AuthenticateAysnc(email, password);
+            var token = await _service.AuthenticateAysnc(request);
             if (token == null) return Unauthorized("Invalid Credential");
             return Ok(new { token });
         }

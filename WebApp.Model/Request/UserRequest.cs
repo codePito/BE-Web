@@ -12,7 +12,7 @@ namespace WebApp.Model.Request
     {
         [Required(ErrorMessage = "UserName is required")]
         [StringLength(50, MinimumLength = 5, ErrorMessage = "UserName must be between 5 and 50 characters")]
-        [RegularExpression(@"^[\p{L}\p{M}\d\s_ ]+$", ErrorMessage = "Full name can only contain letters, numbers, spaces and underscore")]
+        [RegularExpression(@"^[\p{L}\p{M}\s_ ]+$", ErrorMessage = "Full name can only contain letters, numbers, spaces and underscore")]
         public string UserName { get; set; }
         [Required(ErrorMessage = "Password is required")]
         [PasswordStrength(MinLength = 8, RequireUppercase = true, RequireLowercase = true, RequireDigit = true)]
