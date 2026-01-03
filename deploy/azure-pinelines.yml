@@ -62,7 +62,7 @@ steps:
     appType: 'webAppLinux'
     appName: $(appName)
     package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
-    appSettings: |
+    appSettings: >
       -ConnectionStrings__Web "Server=tcp:ecommerce-db-server.database.windows.net,1433;Initial Catalog=EcommerceDB;Persist Security Info=False;User ID=dbadmin;Password=Anhtu@n100103;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
       -Momo__ReturnUrl "https://ecommerce.playops.dev/"
       -Momo__NotifyUrl "https://ecommerce-webapp-hzfvdrbfabekc3bf.southeastasia-01.azurewebsites.net/api/payment/momo/notify"
