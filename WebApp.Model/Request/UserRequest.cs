@@ -28,5 +28,6 @@ namespace WebApp.Model.Request
         [Required(ErrorMessage = "Address is required")]
         [StringLength(200, MinimumLength = 5, ErrorMessage = "Address cannot exceed 200 characters")]
         public string Address { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

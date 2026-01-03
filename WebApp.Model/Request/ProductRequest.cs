@@ -28,5 +28,6 @@ namespace WebApp.Model.Request
         [Required]
         [Range(0, int.MaxValue, ErrorMessage = "Low stock threshold cannot be negative")]
         public int LowStockThreshold { get; set; } = 5;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
