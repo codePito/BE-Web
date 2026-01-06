@@ -90,6 +90,13 @@ namespace WebApp.Controller.Controllers
             return Ok(products);
         }
 
+        [HttpGet("count")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTotalProducts()
+        {
+            var products = await _service.GetProductsAsync();
+            return Ok(new { total = products.Count() });
+        }
         public class UpdateStockRequest
         {
             public int NewStockQuantity { get; set; }

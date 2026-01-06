@@ -21,7 +21,7 @@ namespace WebApp.Controller.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetCategories()
         {
-            var categories = _service.GetCategoriesAsync();
+            var categories = await _service.GetCategoriesAsync();
             return Ok(categories);
         }
 

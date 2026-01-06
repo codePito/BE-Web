@@ -31,7 +31,7 @@ namespace WebApp.Model.Entities
         [MaxLength(50)]
         public string StorageProvider { get; set; } = "CloudflareR2";
         public int UploadedBy { get; set; }
-        public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UploadedAt { get; set; } = DateTime.Now;
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
         [NotMapped]

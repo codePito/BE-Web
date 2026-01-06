@@ -101,7 +101,7 @@ namespace WebApp.Controller.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                var result = await _service.UploadImageAsync(file, ImageEntityTypes.Category, categoryId, userId, false);
+                var result = await _service.UploadImageAsync(file, ImageEntityTypes.Category, categoryId, userId, true);
                 return Ok(result);
             }
             catch (ArgumentException ex)

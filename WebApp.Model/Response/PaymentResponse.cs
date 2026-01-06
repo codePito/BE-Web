@@ -15,7 +15,7 @@ namespace WebApp.Model.Response
         public string ProviderPaymentId { get; set; } = string.Empty;
         public decimal amout { get; set; }
         public string Currency { get; set; } = "VND";
-        public string Status { get; set; } = "Pending";
+        public int Status { get; set; }
         public DateTime CreatedAt { get; set; } 
     }
 }

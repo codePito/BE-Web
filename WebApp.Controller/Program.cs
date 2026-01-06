@@ -25,6 +25,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers(opt =>
 {
     opt.Filters.Add<ValidationFilter>();
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    // Force UTC datetime serialization
+    options.JsonSerializerOptions.WriteIndented = false;
 });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>

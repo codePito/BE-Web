@@ -15,6 +15,8 @@ namespace WebApp.Model.Entities
         public string ProductName { get; set; } = string.Empty;
         public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }
+        public string? VariantId { get; set; }
+        public string? VariantInfo { get; set; }
         public decimal Total => UnitPrice * Quantity;
     }
 }

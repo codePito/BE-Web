@@ -25,9 +25,9 @@ namespace WebApp.Controller.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddItem(int productId, int quantity = 1)
+        public async Task<IActionResult> AddItem(int productId, int quantity = 1, string? variantId = null)
         {
-            return Ok(await _service.AddToCartAsync(UserId, productId, quantity));
+            return Ok(await _service.AddToCartWithVariantAsync(UserId, productId, quantity, variantId));
         }
 
         [HttpPut]

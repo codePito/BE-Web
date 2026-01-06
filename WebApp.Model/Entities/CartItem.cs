@@ -14,5 +14,7 @@ namespace WebApp.Model.Entities
         public int ProductId { get; set; }
         public Product? Product { get; set; }
         public int Quantity { get; set; } = 1;
+        public string? VariantId { get; set; }
+        public string? VariantInfo { get; set; }
     }
 }

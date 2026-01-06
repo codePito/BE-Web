@@ -51,7 +51,7 @@ namespace WebApp.Service.Implementations
             if (image == null) return false;
 
             image.IsDeleted = true;
-            image.DeletedAt = DateTime.UtcNow;
+            image.DeletedAt = DateTime.Now;
             await _repo.UpdateAsync(image);
 
             _logger.LogInformation("Image {ImageId} soft deleted by user {UserId}", imageId, userId);

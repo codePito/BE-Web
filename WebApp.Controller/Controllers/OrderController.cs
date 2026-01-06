@@ -88,5 +88,25 @@ namespace WebApp.Controller.Controllers
             var result = await _service.GetProductSalesMonthlyAsync(year);
             return Ok(result);
         }
+
+        [HttpGet("count")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetTotalOrders()
+        {
+            var orders = await _service.GetAllAsync();
+            return Ok(new { total = orders.Count() });
+        }
+
+        [HttpGet("revenue")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetTotalRevenue()
+        {
+            var orders = await _service.GetAllAsync();
+            var paidStatus = (int)OrderStatus.Paid;
+            var totalRevenue = orders
+                .Where(o => o.Status == paidStatus)
+                .Sum(o => o.TotalAmount);
+            return Ok(new { total = totalRevenue });
+        }
     }
 }

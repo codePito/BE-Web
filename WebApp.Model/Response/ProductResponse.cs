@@ -12,7 +12,7 @@ namespace WebApp.Model.Response
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
-        //public string CategoryName { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
         public int CategoryId { get; set; }
         public int CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -24,5 +24,6 @@ namespace WebApp.Model.Response
         public bool IsAvailable { get; set; }
         public bool IsOutOfStock { get; set; }
         public bool IsLowStock { get; set; }
+        public string? Variants { get; set; }
     }
 }

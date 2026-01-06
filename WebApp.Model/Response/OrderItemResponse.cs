@@ -14,5 +14,7 @@ namespace WebApp.Model.Response
         public decimal UnitPrice { get; set; } 
         public int Quantity { get; set; }
         public decimal Total {  get; set; }
+        public string? VariantId { get; set; }
+        public string? VariantInfo { get; set; }
     }
 }

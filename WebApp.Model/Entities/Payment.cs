@@ -16,7 +16,7 @@ namespace WebApp.Model.Entities
         public decimal Amount { get; set; }
         public string Currency { get; set; } = "VNĐ";
         public PaymentStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string? RawResponse { get; set; }
     }
 

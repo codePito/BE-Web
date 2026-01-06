@@ -45,7 +45,11 @@ namespace WebApp.Helper
                 .ForMember(dest => dest.Price,
                     opt => opt.MapFrom(src => src.Product.Price))
                 .ForMember(dest => dest.ProductImageUrl,
-                    opt => opt.MapFrom(src => src.Product != null ? src.Product.PrimaryImageUrl : null));
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.PrimaryImageUrl : null))
+                .ForMember(dest => dest.VariantId,
+                    opt => opt.MapFrom(src => src.VariantId))
+                .ForMember(dest => dest.VariantInfo,
+                    opt => opt.MapFrom(src => src.VariantInfo));
 
             //Cart
             CreateMap<Cart, CartResponse>();
@@ -60,7 +64,7 @@ namespace WebApp.Helper
             //******************* Entity -> Response *******************
             //Order
             CreateMap<Order, OrderResponse>()
-                .ForMember(o => o.Status, opt => opt.MapFrom(s => s.Status.ToString()))
+                .ForMember(o => o.Status, opt => opt.MapFrom(s => (int)s.Status))
                 .ForMember(o => o.Items, opt => opt.MapFrom(s => s.Items))
                 .ForMember(o => o.UserName, opt => opt.MapFrom(s => s.User != null ? s.User.UserName : null))
                 .ForMember(o => o.UserEmail, opt => opt.MapFrom(s => s.User != null ? s.User.Email : null));
@@ -70,12 +74,14 @@ namespace WebApp.Helper
                 opt => opt.MapFrom(s => s.Total));
 
             CreateMap<Payment, PaymentResponse>()
-                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
+                 .ForMember(d => d.Status, opt => opt.MapFrom(s => (int)s.Status));
 
             //Product
             CreateMap<Product, ProductResponse>()
                 .ForMember(dest => dest.PrimaryImageUrl,
                     opt => opt.MapFrom(src => src.PrimaryImageUrl))
+                .ForMember(dest => dest.CategoryName,
+                    opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
                 .ForMember(dest => dest.ImageUrls,
                     opt => opt.MapFrom(src => src.ImageUrls))
                 .ForMember(dest => dest.StockQuantity,

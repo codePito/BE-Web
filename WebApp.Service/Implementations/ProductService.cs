@@ -94,6 +94,71 @@ namespace WebApp.Service.Implementations
 
             return _mapper.Map<IEnumerable<ProductResponse>>(outOfStockProducts);
         }
+        public async Task ReduceStockAsync(int productId, int quantity, string? variantId = null)
+        {
+            var product = _repo.GetByID(productId);
+            if (product == null) throw new Exception("Product not found");
+
+            var variants = product.VariantsData;
+
+            if (variants?.HasVariants == true && !string.IsNullOrEmpty(variantId))
+            {
+                // Reduce variant stock
+                var variant = variants.Options.FirstOrDefault(v => v.Id == variantId);
+                if (variant == null) throw new Exception($"Variant {variantId} not found");
+
+                if (variant.Stock < quantity)
+                    throw new Exception($"Not enough stock for variant {variantId}, only {variant.Stock} available");
+
+                variant.Stock -= quantity;
+                product.VariantsData = variants; // Trigger setter to serialize
+
+                // Update total stock
+                product.StockQuantity = product.TotalStock;
+            }
+            else
+            {
+                // Reduce product stock (no variants)
+                if (product.StockQuantity < quantity)
+                    throw new Exception($"Not enough stock, only {product.StockQuantity} available");
+
+                product.StockQuantity -= quantity;
+            }
+
+            product.IsAvailable = product.StockQuantity > 0;
+            _repo.Update(product);
+            await _repo.SaveChangesAsync();
+        }
+
+        public async Task RestoreStockAsync(int productId, int quantity, string? variantId = null)
+        {
+            var product = _repo.GetByID(productId);
+            if (product == null) throw new Exception("Product not found");
+
+            var variants = product.VariantsData;
+
+            if (variants?.HasVariants == true && !string.IsNullOrEmpty(variantId))
+            {
+                // Restore variant stock
+                var variant = variants.Options.FirstOrDefault(v => v.Id == variantId);
+                if (variant == null) throw new Exception($"Variant {variantId} not found");
+
+                variant.Stock += quantity;
+                product.VariantsData = variants; // Trigger setter to serialize
+
+                // Update total stock
+                product.StockQuantity = product.TotalStock;
+            }
+            else
+            {
+                // Restore product stock (no variants)
+                product.StockQuantity += quantity;
+            }
+
+            product.IsAvailable = true;
+            _repo.Update(product);
+            await _repo.SaveChangesAsync();
+        }
     }
     
 }

@@ -17,7 +17,9 @@ namespace WebApp.Model.Response
         public string? UserEmail { get; set; }
         public string? ShippingAddress { get; set; }
         public string Currency {  get; set; }
-        public OrderStatus Status { get; set; }
+        public int Status { get; set; }
         public List<OrderItemResponse> Items { get; set; } = new();
+        public DateTime? PaymentExpiry { get; set; }
+
     }
 }

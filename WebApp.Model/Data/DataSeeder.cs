@@ -20,7 +20,7 @@ namespace WebApp.Model.Data
                     Role = "Admin",
                     Address = "Admin Address",
                     PhoneNumber = "0000000000",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 context.Users.Add(adminUser);

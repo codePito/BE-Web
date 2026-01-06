@@ -65,6 +65,14 @@ namespace WebApp.Controller.Controllers
             var result = await _service.GetUsers();
             return Ok(result);
         }
-        
+
+        [HttpGet("count")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetTotalUsers()
+        {
+            var users = await _service.GetUsers();
+            return Ok(new { total = users.Count() });
+        }
+
     }
 }

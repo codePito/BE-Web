@@ -122,12 +122,27 @@ namespace WebApp.Controller.Controllers
         [HttpPost("{paymentId}/retry")]
         public async Task<IActionResult> Retry(int paymentId)
         {
-            var userIdClaim = User.FindFirst("id");
-            if(userIdClaim == null) return Unauthorized();
-            var userId = int.Parse(userIdClaim.Value);
-            var result = await _service.RetryPaymentAsync(paymentId, userId);
-            return Ok(result);
+            try
+            {
+                var userIdClaim = User.FindFirst("id");
+                if (userIdClaim == null) return Unauthorized();
+                var userId = int.Parse(userIdClaim.Value);
+
+                _logger.LogInformation("Retry payment {PaymentId} for user {UserId}", paymentId, userId);
+
+                var result = await _service.RetryPaymentAsync(paymentId, userId);
+
+                _logger.LogInformation("Retry result: PayUrl={PayUrl}, RequestId={RequestId}", result.PayUrl, result.RequestId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrying payment {PaymentId}", paymentId);
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
 
         [HttpPost("confirm")]
         public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmPaymentRequest request)
