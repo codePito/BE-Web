@@ -56,14 +56,11 @@ namespace WebApp.Repository.Implementations
         }
         public async Task<IEnumerable<Order>> GetExpiredPendingOrdersAsync(int minutesAgo)
         {
-            var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-            var vnNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
-            var cutoffTime = vnNow.AddMinutes(-minutesAgo);
-
+            var cutoffTime = DateTime.Now.AddMinutes(-minutesAgo);
 
             return await _context.Orders
                 .Where(o => o.Status == OrderStatus.PaymentPending
-                    && (o.PaymentExpiry.HasValue && o.PaymentExpiry.Value < vnNow
+                    && (o.PaymentExpiry.HasValue && o.PaymentExpiry.Value < DateTime.Now
                         || o.CreatedAt < cutoffTime)) 
                 .Include(o => o.Items)
                 .ToListAsync();
