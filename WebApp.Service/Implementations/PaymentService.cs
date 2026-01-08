@@ -57,7 +57,10 @@ namespace WebApp.Service.Implementations
                 if (order.UserId != userId) throw new UnauthorizedAccessException("You don't have permission to pay this order");
                 if (order.Status == OrderStatus.Paid) throw new Exception("Order already paid");
 
-                order.PaymentExpiry = DateTime.Now.AddMinutes(30);
+                var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                var vnNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
+                order.PaymentExpiry = vnNow.AddMinutes(30);
+
                 order.Status = OrderStatus.PaymentPending;
                 await _orderRepo.UpdateAsync(order);
 
@@ -272,7 +275,10 @@ namespace WebApp.Service.Implementations
             if (order == null) throw new Exception("Order not found");
             if (order.UserId != userId) throw new UnauthorizedAccessException();
 
-            order.PaymentExpiry = DateTime.Now.AddMinutes(30);
+            var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vnNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
+            order.PaymentExpiry = vnNow.AddMinutes(30);
+
             order.Status = OrderStatus.PaymentPending;
             await _orderRepo.UpdateAsync(order);
 
