@@ -7,14 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WebApp.Model.Response;
 using WebApp.Repository.Interfaces;
 using WebApp.Service.Interfaces;
+using WebApp.Helper;
 
 namespace WebApp.Service.Implementations
 {
@@ -51,7 +47,7 @@ namespace WebApp.Service.Implementations
             if (image == null) return false;
 
             image.IsDeleted = true;
-            image.DeletedAt = DateTime.Now;
+            image.DeletedAt = DateTimeHelper.VietnamNow;
             await _repo.UpdateAsync(image);
 
             _logger.LogInformation("Image {ImageId} soft deleted by user {UserId}", imageId, userId);
@@ -158,7 +154,7 @@ namespace WebApp.Service.Implementations
                     Width = width,
                     Height = height,
                     UploadedBy = uploadedBy,
-                    UploadedAt = DateTime.UtcNow,
+                    UploadedAt = DateTimeHelper.VietnamNow,
                     StorageProvider = "CloudflareR2"
                 };
 

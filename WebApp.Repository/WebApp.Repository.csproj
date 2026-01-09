@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebApp.Model\WebApp.Model.csproj" />
+	  <ProjectReference Include="..\WebApp.Helper\WebApp.Helper.csproj" />
+	  <ProjectReference Include="..\WebApp.Model\WebApp.Model.csproj" />
   </ItemGroup>
 
 </Project>

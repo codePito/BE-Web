@@ -5,6 +5,7 @@ using System.Security.Claims;
 using WebApp.Model.Entities;
 using WebApp.Model.Request;
 using WebApp.Service.Interfaces;
+using WebApp.Helper;
 
 namespace WebApp.Controller.Controllers
 {
@@ -83,7 +84,7 @@ namespace WebApp.Controller.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetProductSalesMonthly([FromQuery] int year = 0)
         {
-            if (year == 0) year = DateTime.Now.Year;
+            if (year == 0) year = DateTimeHelper.VietnamNow.Year;
 
             var result = await _service.GetProductSalesMonthlyAsync(year);
             return Ok(result);

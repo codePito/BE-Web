@@ -12,6 +12,7 @@ using WebApp.Model.Request;
 using WebApp.Model.Response;
 using WebApp.Repository.Interfaces;
 using WebApp.Service.Interfaces;
+using WebApp.Helper;
 
 namespace WebApp.Service.Implementations
 {
@@ -42,7 +43,7 @@ namespace WebApp.Service.Implementations
                 var order = new Order
                 {
                     UserId = userId,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTimeHelper.VietnamNow,
                     Status = OrderStatus.Pending,
                     Currency = request.Currency,
                     ShippingAddress = request.ShippingAddress,

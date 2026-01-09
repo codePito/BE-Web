@@ -14,6 +14,7 @@ using WebApp.Model.Request;
 using WebApp.Model.Response;
 using WebApp.Repository.Interfaces;
 using WebApp.Service.Interfaces;
+using WebApp.Helper;
 
 namespace WebApp.Service.Implementations
 {
@@ -57,7 +58,8 @@ namespace WebApp.Service.Implementations
                 if (order.UserId != userId) throw new UnauthorizedAccessException("You don't have permission to pay this order");
                 if (order.Status == OrderStatus.Paid) throw new Exception("Order already paid");
 
-                order.PaymentExpiry = DateTime.UtcNow.AddHours(7).AddMinutes(30);
+                //order.PaymentExpiry = DateTime.UtcNow.AddMinutes(30);
+                order.PaymentExpiry = DateTimeHelper.VietnamNow.AddMinutes(30);
 
                 order.Status = OrderStatus.PaymentPending;
                 await _orderRepo.UpdateAsync(order);
@@ -69,7 +71,7 @@ namespace WebApp.Service.Implementations
                     Currency = order.Currency,
                     Provider = "MoMo",
                     Status = PaymentStatus.Pending,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTimeHelper.VietnamNow,
                 };
                 var savedPayment = await _repo.AddAsync(payment);
 
@@ -273,7 +275,8 @@ namespace WebApp.Service.Implementations
             if (order == null) throw new Exception("Order not found");
             if (order.UserId != userId) throw new UnauthorizedAccessException();
 
-            order.PaymentExpiry = order.PaymentExpiry = DateTime.UtcNow.AddHours(7).AddMinutes(30);
+            //order.PaymentExpiry = order.PaymentExpiry = DateTime.Now.AddMinutes(30);
+            order.PaymentExpiry = DateTimeHelper.VietnamNow.AddMinutes(30);
             order.Status = OrderStatus.PaymentPending;
             await _orderRepo.UpdateAsync(order);
 
@@ -284,7 +287,7 @@ namespace WebApp.Service.Implementations
                 Currency = order.Currency,
                 Provider = existing.Provider,
                 Status = PaymentStatus.Pending,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTimeHelper.VietnamNow
             };
             var saved = await _repo.AddAsync(newPayment);
 

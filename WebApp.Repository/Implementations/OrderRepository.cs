@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using WebApp.Model.Data;
 using WebApp.Model.Entities;
 using WebApp.Repository.Interfaces;
+using WebApp.Helper;
 
 namespace WebApp.Repository.Implementations
 {
@@ -56,7 +57,7 @@ namespace WebApp.Repository.Implementations
         }
         public async Task<IEnumerable<Order>> GetExpiredPendingOrdersAsync(int minutesAgo)
         {
-            var vnNow = DateTime.UtcNow.AddHours(7);
+            var vnNow = DateTimeHelper.VietnamNow;
             var cutoffTime = vnNow.AddMinutes(-minutesAgo);
 
             return await _context.Orders
