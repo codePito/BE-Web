@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using WebApp.Model.Entities;
@@ -7,7 +8,20 @@ namespace WebApp.Model.Data
 {
     public static class DataSeeder
     {
-        private static readonly TimeZoneInfo VietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        private static readonly TimeZoneInfo VietnamTimeZone = GetVietnamTimeZone();
+
+        private static TimeZoneInfo GetVietnamTimeZone()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            }
+            else
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+            }
+        }
+
         private static DateTime VietnamNow => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, VietnamTimeZone);
 
         public static void SeedData(WebContext context)
