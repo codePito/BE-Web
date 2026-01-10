@@ -59,7 +59,7 @@ namespace WebApp.Service.Implementations
                 if (order.Status == OrderStatus.Paid) throw new Exception("Order already paid");
 
                 //order.PaymentExpiry = DateTime.UtcNow.AddMinutes(30);
-                order.PaymentExpiry = DateTimeHelper.VietnamNow.AddMinutes(30);
+                order.PaymentExpiry = DateTimeHelper.VietnamNow.AddMinutes(100);
 
                 order.Status = OrderStatus.PaymentPending;
                 await _orderRepo.UpdateAsync(order);
@@ -276,7 +276,7 @@ namespace WebApp.Service.Implementations
             if (order.UserId != userId) throw new UnauthorizedAccessException();
 
             //order.PaymentExpiry = order.PaymentExpiry = DateTime.Now.AddMinutes(30);
-            order.PaymentExpiry = DateTimeHelper.VietnamNow.AddMinutes(30);
+            order.PaymentExpiry = DateTimeHelper.VietnamNow.AddMinutes(100);
             order.Status = OrderStatus.PaymentPending;
             await _orderRepo.UpdateAsync(order);
 

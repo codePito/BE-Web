@@ -44,9 +44,8 @@ namespace WebApp.Service.Implementations
             {
                 var requestId = Guid.NewGuid().ToString();
 
-                // ✅ Thêm timestamp để tránh trùng orderId khi retry
                 var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                var orderIdStr = $"{orderId}_{timestamp}"; // VD: "2_1702345678"
+                var orderIdStr = $"{orderId}_{timestamp}";
 
                 var orderInfo = $"Payment for order {orderId}";
                 var amountStr = ((long)amount).ToString();
@@ -54,7 +53,7 @@ namespace WebApp.Service.Implementations
 
                 var orderExpireTime = 15;
 
-                // Raw signature string - ĐÚNG thứ tự alphabet
+                // Raw signature string 
                 var rawSignature = $"accessKey={_accessKey}&amount={amountStr}&extraData={extraData}&ipnUrl={notifyUrl}&orderId={orderIdStr}&orderInfo={orderInfo}&partnerCode={_partnerCode}&redirectUrl={returnUrl}&requestId={requestId}&requestType={_requestType}";
 
                 _logger.LogInformation("MoMo Raw Signature: {RawSignature}", rawSignature);

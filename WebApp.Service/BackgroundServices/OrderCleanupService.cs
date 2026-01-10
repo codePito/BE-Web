@@ -16,7 +16,7 @@ namespace WebApp.Service.BackgroundServices
         private readonly IServiceProvider _services;
         private readonly ILogger<OrderCleanupService> _logger;
         private readonly TimeSpan _interval = TimeSpan.FromMinutes(5); 
-        private readonly int _expiryMinutes = 30; 
+        private readonly int _expiryMinutes = 100; 
 
         public OrderCleanupService(IServiceProvider services, ILogger<OrderCleanupService> logger)
         {
