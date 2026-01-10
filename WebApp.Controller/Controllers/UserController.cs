@@ -20,8 +20,15 @@ namespace WebApp.Controller.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRequest request)
         {
-            await _service.RegisterAsync(request);
-            return Ok("Registed Successfully");
+            try
+            {
+                await _service.RegisterAsync(request);
+                return Ok("Registed Successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("login")]
