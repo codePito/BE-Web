@@ -35,7 +35,21 @@ namespace WebApp.Repository.Implementations
 
         public async Task<IEnumerable<User>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            var users = await _context.Users.ToListAsync();
+
+            // Load avatars from Images table
+            var userIds = users.Select(u => u.Id).ToList();
+            var avatars = await _context.Images
+                .Where(i => i.EntityType == "User" && userIds.Contains(i.EntityId) && !i.IsDeleted && i.IsPrimary)
+                .ToListAsync();
+
+            foreach (var user in users)
+            {
+                var avatar = avatars.FirstOrDefault(a => a.EntityId == user.Id);
+                user.AvatarUrl = avatar?.Url;
+            }
+
+            return users;
         }
         public async Task<User?> GetByIdAsync(int id)
         {

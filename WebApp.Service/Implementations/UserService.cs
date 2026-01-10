@@ -69,8 +69,14 @@ namespace WebApp.Service.Implementations
 
         public async Task RegisterAsync(UserRequest request)
         {
+            var checkUser = await _repo.GetByUsernameAsync(request.Email);
+            if(checkUser != null)
+            {
+                throw new Exception("User already exists");
+            }
             var entity = _mapper.Map<User>(request);
             entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            
             await _repo.AddAsync(entity);
             await _repo.SaveChangesAsync();
 
