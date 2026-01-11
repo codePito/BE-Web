@@ -54,7 +54,7 @@ namespace WebApp.Service.BackgroundServices
 
             try
             {
-                // Tìm orders PaymentPending quá 30 phút
+                
                 var expiredOrders = await orderRepo.GetExpiredPendingOrdersAsync(_expiryMinutes);
                 var ordersList = expiredOrders.ToList();
 
